@@ -50,11 +50,11 @@ class DiaMol:
         for key in dict:
             setattr(self, key, dict[key])
         self.DictParams = dict
-        a_sr = [42.13, 15.4, 5.4, -5.25]
-        a_mr = [-18648.4, 13674.7, -3950.49, 564.588, -39.996, 1.12517]
+        a_s = [42.13, 15.4, 5.4, -5.25]
+        a_m = [-18648.4, 13674.7, -3950.49, 564.588, -39.996, 1.12517]
         r_a = [5.5, 7.8]
-        b_sr = [25.29, 2.87, -0.09, -0.42]
-        b_mr = [79.9758, -64.2146, 26.4758, -4.99457, 0.448782, -0.0156147]
+        b_s = [25.29, 2.87, -0.09, -0.42]
+        b_m = [79.9758, -64.2146, 26.4758, -4.99457, 0.448782, -0.0156147]
         r_b = [3.25, 7.25]
         re, De, gam, al_Cl, al_Cl2 = 3.757, 0.091, 0.566, 15.5421, 2 * 15.5421
         r = sp.Symbol('r')
@@ -62,22 +62,22 @@ class DiaMol:
         d_eps = sp.diff(eps, r)
         self.eps = sp.lambdify(r, eps)
         self.d_eps = sp.lambdify(r, d_eps)
-        poly = lambda r, a: sum(co*r**i for i,co in enumerate(a))
+        poly = lambda r, a: sum(c * r**k for k, c in enumerate(a))
         deriv = lambda a: sp.lambdify(r, sp.diff(a, r))
-        para_sr, perp_sr = poly(r - re, a_sr), poly(r - re, b_sr)
-        para_mr, perp_mr = poly(r, a_mr), poly(r, b_mr)
-        para_lr = (al_Cl2 + 4 * al_Cl**2 / r**3) / (1 - 4 * al_Cl**2 / r**6)
-        perp_lr = (al_Cl2 - 2 * al_Cl**2 / r**3) / (1 - al_Cl**2 / r**6)
-        d_para_sr, d_perp_sr = deriv(para_sr), deriv(perp_sr)
-        d_para_mr, d_perp_mr = deriv(para_mr), deriv(perp_mr)
-        d_para_lr, d_perp_lr = deriv(para_lr), deriv(perp_lr)
-        para_sr, perp_sr = sp.lambdify(r, para_sr), sp.lambdify(r, perp_sr)
-        para_mr, perp_mr = sp.lambdify(r, para_mr), sp.lambdify(r, perp_mr)
-        para_lr, perp_lr = sp.lambdify(r, para_lr), sp.lambdify(r, perp_lr)
-        self.al_para = lambda r: xp.where(r<=r_a[0], para_sr(r), xp.where(r<=r_a[1], para_mr(r), para_lr(r)))
-        self.al_perp = lambda r: xp.where(r<=r_b[0], perp_sr(r), xp.where(r<=r_b[1], perp_mr(r), perp_lr(r)))
-        self.d_al_para = lambda r: d_para_sr(r) if r <= r_a[0] else (d_para_mr(r) if r <= r_a[1] else d_para_lr(r))
-        self.d_al_perp = lambda r: d_perp_sr(r) if r <= r_b[0] else (d_perp_mr(r) if r <= r_b[1] else d_perp_lr(r))
+        para_s, perp_s = poly(r - re, a_s), poly(r - re, b_s)
+        para_m, perp_m = poly(r, a_m), poly(r, b_m)
+        para_l = (al_Cl2 + 4 * al_Cl**2 / r**3) / (1 - 4 * al_Cl**2 / r**6)
+        perp_l = (al_Cl2 - 2 * al_Cl**2 / r**3) / (1 - al_Cl**2 / r**6)
+        d_para_s, d_perp_s = deriv(para_s), deriv(perp_s)
+        d_para_m, d_perp_m = deriv(para_m), deriv(perp_m)
+        d_para_l, d_perp_l = deriv(para_l), deriv(perp_l)
+        para_s, perp_s = sp.lambdify(r, para_s), sp.lambdify(r, perp_s)
+        para_m, perp_m = sp.lambdify(r, para_m), sp.lambdify(r, perp_m)
+        para_l, perp_l = sp.lambdify(r, para_l), sp.lambdify(r, perp_l)
+        self.al_para = lambda r: xp.where(r<=r_a[0], para_s(r), xp.where(r<=r_a[1], para_m(r), para_l(r)))
+        self.al_perp = lambda r: xp.where(r<=r_b[0], perp_s(r), xp.where(r<=r_b[1], perp_m(r), perp_l(r)))
+        self.d_al_para = lambda r: d_para_s(r) if r<=r_a[0] else (d_para_m(r) if r<=r_a[1] else d_para_l(r))
+        self.d_al_perp = lambda r: d_perp_s(r) if r<=r_b[0] else (d_perp_m(r) if r<=r_b[1] else d_perp_l(r))
         self.Dal = lambda r: self.al_para(r) - self.al_perp(r)
         self.d_Dal = lambda r: self.d_al_para(r) - self.d_al_perp(r)
 

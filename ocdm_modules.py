@@ -37,24 +37,24 @@ def run_method(case):
     plt.rc('image', cmap='bwr')
     print('\033[92m    {} \033[00m'.format(case.__str__()))
     print('\033[92m    E0 = {:.2f}   omega = {:.2f}  \033[00m'.format(case.E0, case.omega))
-    filestr = type(case).__name__ + '_' + 'E0{:.2f}_OM{:.2f}'.format(case.E0, case.omega).replace('.', '')
+    filestr = type(case).__name__
 
     if case.Method == 'display_potentials':
         plt.rcParams.update({'figure.figsize': [16, 8]})
         fig, axs = plt.subplots(1, 2)
-        axs[0].set_xlabel(r'$r$')
-        axs[1].set_xlabel(r'$r$')
-        axs[0].set_ylabel(r'$\varepsilon$')
-		r = case.r_display 
-        axs[0].plot(r, case.eps(r), cs[1], lw=3, label=r'$\varepsilon(r)$')
-        axs[1].plot(r, case.al_para(r), cs[2], lw=3, label=r'$\alpha_\parallel(r)$')
-        axs[1].plot(r, case.al_perp(r), cs[3], lw=3, label=r'$\alpha_\perp(r)$')
-		axs[0].legend(loc='upper right', labelcolor='linecolor')
-		axs[1].legend(loc='upper right', labelcolor='linecolor')
+        axs[0].plot(case.r, case.eps(case.r), cs[1], lw=3, label=r'$\varepsilon(r)$')
+        axs[1].plot(case.r, case.al_para(case.r), cs[2], lw=3, label=r'$\alpha_\parallel(r)$')
+        axs[1].plot(case.r, case.al_perp(case.r), cs[3], lw=3, label=r'$\alpha_\perp(r)$')
+		for ax in axs:
+			ax.set_xlabel(r'$r$')
+			ax.legend(loc='upper right', labelcolor='linecolor')
         if case.SaveData:
             fig.savefig(filestr + '.png', dpi=case.dpi)
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.pause(0.5)
+	elif case.Method == 'display_ZVS':
+		filestr += '_' + 'E0{:.2f}_OM{:.2f}'.format(case.E0, case.omega).replace('.', '')
+	elif case.Method == 'Poincare':
 
 
 def save_data(case, data, filestr, info=[]):
