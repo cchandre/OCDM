@@ -36,17 +36,17 @@ def run_case(dict):
 	run_method(case)
 
 def main():
-    run_case(dict)
-    plt.show()
+	run_case(dict)
+	plt.show()
 
 class DiaMol:
-    def __repr__(self):
-        return '{self.__class__.__name__}({self.DictParams})'.format(self=self)
+	def __repr__(self):
+		return '{self.__class__.__name__}({self.DictParams})'.format(self=self)
 
-    def __str__(self):
-        return 'Optical Centrifuge for Diatomic Molecules ({self.__class__.__name__})'.format(self=self)
+	def __str__(self):
+		return 'Optical Centrifuge for Diatomic Molecules ({self.__class__.__name__})'.format(self=self)
 
-    def __init__(self, dict):
+	def __init__(self, dict):
 		for key in dict:
 			setattr(self, key, dict[key])
 		self.DictParams = dict
@@ -81,7 +81,24 @@ class DiaMol:
 		self.d_al_perp = lambda r: d_perp_s(r) if r<=r_b[0] else (d_perp_m(r) if r<=r_b[1] else d_perp_l(r))
 		self.Dal = lambda r: self.al_para(r) - self.al_perp(r)
 		self.d_Dal = lambda r: self.d_al_para(r) - self.d_al_perp(r)
-		self.V2D = lambda phi, r: self.eps(r) - self.E0**2 / 4 * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
+		self.V2D = lambda phi, r: -mu * self.omega**2 * r**2 / 2 + self.eps(r) - self.E0**2 / 4 * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
+
+	def eqn_H2D(self, t, y):
+		r, phi, pr, pphi = xp.split(y, 4)
+		dr = pr / self.mu
+		dphi = pphi / (self.mu * r**2) - self.omega
+		dpr = pphi**2 / (self.mu * r**3) - self.d_eps(r) + self.E0**2 / 4 * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
+		dpphi = -self.E0**2 / 4 * self.Dal(r) * xp.sin(2 * phi)
+		return xp.concatenate((dr, dphi, dpr, dpphi), axis=None)
+
+	def env(self, t):
+		te = xp.cumsum(self.te)
+		if self.envelope == 'sinus':
+			return xp.where(t<=0, 0, xp.where(t<=te[0], xp.sin(xp.pi * t / (2 * te[0]))**2, xp.where(t<=te[1], 1, xp.where(t<=te[2], xp.sin(xp.pi * (t - te[2]) / (2 * self.te[2]))**2, 0))))
+		elif self.envelope == 'const':
+			return 1
+		elif self.envelope == 'trapez':
+			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te[2], 0))))
 
 if __name__ == "__main__":
 	main()

@@ -56,21 +56,22 @@ def run_method(case):
         filestr += '_' + 'E0{:.2f}_OM{:.2f}'.format(case.E0, case.omega).replace('.', '')
         ig, ax = plt.subplots(1, 1)
         phi = xp.linspace(0, 2*xp.pi, 256)
-        r = xp.linspace(case.r[0], case.r[1], 256)
-        Phi, R = xp.meshgrid(phi, r)
+        Phi, R = xp.meshgrid(phi, case.r)
         V2D = case.V2D(Phi, R)
-        plt.contourf(Phi, R, V2D, label=r'$V_{2D}$')
+        plt.contourf(Phi, R, V2D, 50, cmap=plt.cm.hot)
+        plt.colorbar()
+        plt.contour(Phi, R, V2D, 50, linewidths=1, colors='k', linestyles='solid')
         ax.set_xlabel(r'$\phi$')
         ax.set_ylabel(r'$r$')
-        ax.legend(loc='upper right', labelcolor='linecolor')
+        ax.set_title(r'$V_\mathrm{2D}$')
         plt.pause(0.5)
 
 #	elif case.Method == 'Poincare':
 
 def save_data(case, data, filestr, info=[]):
-	if case.SaveData:
-		mdic = case.DictParams.copy()
-		mdic.update({'data': data, 'info': info})
-		mdic.update({'date': date.today().strftime(" %B %d, %Y\n"), 'author': 'cristel.chandre@cnrs.fr'})
-		savemat(filestr, mdic)
-		print('\033[90m        Results saved in {}.mat \033[00m'.format(filestr))
+    if case.SaveData:
+        mdic = case.DictParams.copy()
+        mdic.update({'data': data, 'info': info})
+        mdic.update({'date': date.today().strftime(" %B %d, %Y\n"), 'author': 'cristel.chandre@cnrs.fr'})
+        savemat(filestr, mdic)
+        print('\033[90m        Results saved in {}.mat \033[00m'.format(filestr))
