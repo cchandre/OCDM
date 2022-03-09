@@ -21,11 +21,11 @@ ___
 
 - *Method*: string; 'display_potentials', 'display_V2D'
 ####
-- *r*: minimum and maximum values of *r* for the display of the potentials
-- *dimension*: 2, 3; dimension of the computation
+- *r*: array of two floats; minimum and maximum values of *r* for the display of the potentials
+- *dimension*: 2 or 3; dimension of the computation
 - *E0*: float; amplitude of the electric field
 - *omega*: float; value of the frequency of rotation of the polarisation axis
-- ####
+####
 - *SaveData*: boolean; if True, the results are saved in a `.mat` file
 - *PlotResults*: boolean; if True, the results are plotted right after the computation
 - *Parallelization*: tuple (boolean, int); True for parallelization, int is the number of cores to be used or int='all' to use all available cores
