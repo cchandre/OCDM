@@ -25,6 +25,8 @@ ___
 - *dimension*: 2 or 3; dimension of the computation
 - *E0*: float; amplitude of the electric field
 - *omega*: float; value of the frequency of rotation of the polarisation axis
+- *envelope*: string ('const', 'sinus', 'trapez'); envelope function of the laser field
+- *te*: array of 3 floats; duration of ramp-up, plateau and ramp-down (in picoseconds)
 ####
 - *SaveData*: boolean; if True, the results are saved in a `.mat` file
 - *PlotResults*: boolean; if True, the results are plotted right after the computation
