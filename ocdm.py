@@ -47,17 +47,18 @@ class DiaMol:
         return 'Optical Centrifuge for Diatomic Molecules ({self.__class__.__name__})'.format(self=self)
 
     def __init__(self, dict):
-        for key in dict:
-            setattr(self, key, dict[key])
-        self.DictParams = dict
-        a_s = [42.13, 15.4, 5.4, -5.25]
-        a_m = [-18648.4, 13674.7, -3950.49, 564.588, -39.996, 1.12517]
-        r_a = [5.5, 7.8]
-        b_s = [25.29, 2.87, -0.09, -0.42]
-        b_m = [79.9758, -64.2146, 26.4758, -4.99457, 0.448782, -0.0156147]
-        r_b = [3.25, 7.25]
-        re, De, gam, al_Cl, al_Cl2 = 3.757, 0.091, 0.566, 15.5421, 2 * 15.5421
-        r = sp.Symbol('r')
+		for key in dict:
+			setattr(self, key, dict[key])
+		self.DictParams = dict
+		a_s = [42.13, 15.4, 5.4, -5.25]
+		a_m = [-18648.4, 13674.7, -3950.49, 564.588, -39.996, 1.12517]
+		r_a = [5.5, 7.8]
+		b_s = [25.29, 2.87, -0.09, -0.42]
+		b_m = [79.9758, -64.2146, 26.4758, -4.99457, 0.448782, -0.0156147]
+		r_b = [3.25, 7.25]
+		re, De, gam, al_Cl, al_Cl2 = 3.757, 0.091, 0.566, 15.5421, 2 * 15.5421
+		mu = 32545.85
+		r = sp.Symbol('r')
         eps = De * (1 - sp.exp(-gam * (r - re)))**2 - De
         d_eps = sp.diff(eps, r)
         self.eps = sp.lambdify(r, eps)
@@ -80,6 +81,7 @@ class DiaMol:
         self.d_al_perp = lambda r: d_perp_s(r) if r<=r_b[0] else (d_perp_m(r) if r<=r_b[1] else d_perp_l(r))
         self.Dal = lambda r: self.al_para(r) - self.al_perp(r)
         self.d_Dal = lambda r: self.d_al_para(r) - self.d_al_perp(r)
+		self.V2D = lambda phi, r: self.eps(r) - self.E0**2 / 4 * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
 
 if __name__ == "__main__":
 	main()

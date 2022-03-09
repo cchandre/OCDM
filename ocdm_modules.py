@@ -45,17 +45,27 @@ def run_method(case):
         axs[0].plot(case.r, case.eps(case.r), cs[1], lw=3, label=r'$\varepsilon(r)$')
         axs[1].plot(case.r, case.al_para(case.r), cs[2], lw=3, label=r'$\alpha_\parallel(r)$')
         axs[1].plot(case.r, case.al_perp(case.r), cs[3], lw=3, label=r'$\alpha_\perp(r)$')
-		for ax in axs:
-			ax.set_xlabel(r'$r$')
-			ax.legend(loc='upper right', labelcolor='linecolor')
+        for ax in axs:
+            ax.set_xlabel(r'$r$')
+            ax.legend(loc='upper right', labelcolor='linecolor')
         if case.SaveData:
             fig.savefig(filestr + '.png', dpi=case.dpi)
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.pause(0.5)
-	elif case.Method == 'display_ZVS':
-		filestr += '_' + 'E0{:.2f}_OM{:.2f}'.format(case.E0, case.omega).replace('.', '')
-	elif case.Method == 'Poincare':
+    elif case.Method == 'display_V2D':
+        filestr += '_' + 'E0{:.2f}_OM{:.2f}'.format(case.E0, case.omega).replace('.', '')
+        ig, ax = plt.subplots(1, 1)
+        phi = xp.linspace(0, 2*xp.pi, 256)
+        r = xp.linspace(case.r[0], case.r[1], 256)
+        Phi, R = xp.meshgrid(phi, r)
+        V2D = case.V2D(Phi, R)
+        plt.contourf(Phi, R, V2D, label=r'$V_{2D}$')
+        ax.set_xlabel(r'$\phi$')
+        ax.set_ylabel(r'$r$')
+        ax.legend(loc='upper right', labelcolor='linecolor')
+        plt.pause(0.5)
 
+#	elif case.Method == 'Poincare':
 
 def save_data(case, data, filestr, info=[]):
 	if case.SaveData:
