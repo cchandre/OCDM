@@ -21,7 +21,7 @@ ___
 
 - *Method*: string; 'display_potentials', 'display_ZVS', 'dissociation'
 ####
-- *r*: array of two floats; minimum and maximum values of *r* for the display of the potentials
+- *r*: array of two floats; minimum and maximum values of *r* for the display of the potentials and selection of initial conditions
 - *dimension*: 2 or 3; dimension of the computation
 - *E0*: float; amplitude of the electric field
 - *Omega*: lambda function; values of the frequency of rotation of the polarisation axis as a function of time
