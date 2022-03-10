@@ -19,7 +19,7 @@ nohup python3 -u ocdm.py &>ocdm.out < /dev/null &
 ___
 ##  Parameter dictionary
 
-- *Method*: string; 'display_potentials', 'display_V2D'
+- *Method*: string; 'display_potentials', 'display_ZVS'
 ####
 - *r*: array of two floats; minimum and maximum values of *r* for the display of the potentials
 - *dimension*: 2 or 3; dimension of the computation
