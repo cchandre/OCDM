@@ -52,18 +52,18 @@ def run_method(case):
             fig.savefig(filestr + '.png', dpi=case.dpi)
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.pause(0.5)
-    elif case.Method == 'display_V2D':
+    elif case.Method == 'display_ZVS':
         filestr += '_' + 'E0{:.2f}_OM{:.2f}'.format(case.E0, case.omega).replace('.', '')
         ig, ax = plt.subplots(1, 1)
-        phi = xp.linspace(0, 2*xp.pi, 256)
+        phi = xp.linspace(0, 2*xp.pi, self.dpi)
         Phi, R = xp.meshgrid(phi, case.r)
-        V2D = case.V2D(Phi, R)
-        plt.contourf(Phi, R, V2D, 50, cmap=plt.cm.hot)
+        ZVS = case.VZVS2D(R, Phi, 0)
+        plt.contourf(Phi, R, ZVS, 50, cmap=plt.cm.hot)
         plt.colorbar()
-        plt.contour(Phi, R, V2D, 50, linewidths=1, colors='k', linestyles='solid')
+        plt.contour(Phi, R, ZVS, 50, linewidths=1, colors='k', linestyles='solid')
         ax.set_xlabel(r'$\phi$')
         ax.set_ylabel(r'$r$')
-        ax.set_title(r'$V_\mathrm{2D}$')
+        ax.set_title(r'$V_\mathrm{ZVS,2D}$')
         plt.pause(0.5)
 
 #	elif case.Method == 'Poincare':

@@ -54,17 +54,17 @@ class DiaMol:
 		a_m = [-18648.35842481222, 13674.730066523876, -3950.494622828384, 564.5884199329207, -39.995975029375124, 1.125168670489689]
 		r_a = [5.5, 7.8]
 		b_s = [25.29, 2.87, -0.09, -0.42]
-		b_m = [79.9758, -64.2146, 26.4758, -4.99457, 0.448782, -0.0156147]
+		b_m = [79.97579598889766, -64.21463688187681, 26.47584281231729, -4.994574090432429, 0.4487817094919498, -0.015614680049778793]
 		r_b = [3.75, 7.25]
-		re, De, gam, al_Cl, al_Cl2 = 3.756775476853331, 0.091, 0.566, 15.5421, 2 * 15.5421
-		mu = 32545.85
+		re, De, gam, al_Cl, al_Cl2 = 3.756775476853331, 0.0911, 0.566219624544, 15.5421, 2 * 15.5421
+		self.mu = 32545.85
 		r = sp.Symbol('r')
 		eps = De * (1 - sp.exp(-gam * (r - re)))**2 - De
 		d_eps = sp.diff(eps, r)
 		self.eps = sp.lambdify(r, eps)
 		self.d_eps = sp.lambdify(r, d_eps)
 		poly = lambda r, a: sum(c * r**k for k, c in enumerate(a))
-		deriv = lambda a: sp.lambdify(r, sp.diff(a, r))
+		deriv = lambda fun: sp.lambdify(r, sp.diff(fun, r))
 		para_s, perp_s = poly(r - re, a_s), poly(r - re, b_s)
 		para_m, perp_m = poly(r, a_m), poly(r, b_m)
 		para_l = (al_Cl2 + 4 * al_Cl**2 / r**3) / (1 - 4 * al_Cl**2 / r**6)
@@ -81,20 +81,33 @@ class DiaMol:
 		self.d_al_perp = lambda r: d_perp_s(r) if r<=r_b[0] else (d_perp_m(r) if r<=r_b[1] else d_perp_l(r))
 		self.Dal = lambda r: self.al_para(r) - self.al_perp(r)
 		self.d_Dal = lambda r: self.d_al_para(r) - self.d_al_perp(r)
-		self.V2D = lambda phi, r: -mu * self.omega**2 * r**2 / 2 + self.eps(r) - self.E0**2 / 4 * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
+		self.VZVS2D = lambda r, phi, t: -self.mu * self.Omega**2 * r**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
+		self.VZVS3D = lambda r, theta, phi, t: -self.mu * self.Omega**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
 
 	def eqn_H2D(self, t, y):
 		r, phi, pr, pphi = xp.split(y, 4)
+		Eeff = E0**2 * self.env(t)**2 / 4
 		dr = pr / self.mu
-		dphi = pphi / (self.mu * r**2) - self.omega
-		dpr = pphi**2 / (self.mu * r**3) - self.d_eps(r) + self.E0**2 / 4 * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
-		dpphi = -self.E0**2 / 4 * self.Dal(r) * xp.sin(2 * phi)
+		dphi = pphi / (self.mu * r**2) - self.Omega
+		dpr = pphi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
+		dpphi = -Eeff * self.Dal(r) * xp.sin(2 * phi)
 		return xp.concatenate((dr, dphi, dpr, dpphi), axis=None)
+
+	def eqn_H3D(self, t, y):
+		r, theta, phi, pr, ptheta, pphi = xp.split(y, 6)
+		Eeff = E0**2 * self.env(t)**2 / 4
+		dr = pr / self.mu
+		dtheta = ptheta / (self.mu * r**2)
+		dphi = pphi / (self.mu * r**2 * xp.sin(theta)**2) - self.Omega
+		dpr = ptheta**2 / (self.mu * r**3) + pphi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
+		dptheta = pphi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2
+		dpphi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
+		return xp.concatenate((dr, dtheta, dphi, dpr, dptheta, dpphi), axis=None)
 
 	def env(self, t):
 		te = xp.cumsum(self.te)
 		if self.envelope == 'sinus':
-			return xp.where(t<=0, 0, xp.where(t<=te[0], xp.sin(xp.pi * t / (2 * te[0]))**2, xp.where(t<=te[1], 1, xp.where(t<=te[2], xp.sin(xp.pi * (t - te[2]) / (2 * self.te[2]))**2, 0))))
+			return xp.where(t<=0, 0, xp.where(t<=te[0], xp.sin(xp.pi * t / (2 * te[0]))**2, xp.where(t<=te[1], 1, xp.where(t<=te[2], xp.sin(xp.pi * (te[2] - t) / (2 * self.te[2]))**2, 0))))
 		elif self.envelope == 'const':
 			return 1
 		elif self.envelope == 'trapez':

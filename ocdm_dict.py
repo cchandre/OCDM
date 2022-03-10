@@ -5,13 +5,13 @@
 import numpy as xp
 
 
-Method = 'display_potentials'
-r = [2.5, 10]
+Method = 'display_ZVS'
+r = [30, 60]
 
 dimension = 2
 
-E0 = 2e-3
-omega = 0
+E0 = 5e-3
+Omega = 0
 envelope = 'const'
 te = [30, 100, 30]
 
