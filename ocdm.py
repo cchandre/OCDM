@@ -81,13 +81,17 @@ class DiaMol:
 		self.d_al_perp = lambda r: d_perp_s(r) if r<=r_b[0] else (d_perp_m(r) if r<=r_b[1] else d_perp_l(r))
 		self.Dal = lambda r: self.al_para(r) - self.al_perp(r)
 		self.d_Dal = lambda r: self.d_al_para(r) - self.d_al_perp(r)
-		self.VZVS = lambda r, theta, phi, t: -self.mu * self.Omega**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
+		self.ZVS = lambda r, theta, phi, t: -self.mu * self.Omega(t)**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
+		if -De < self.Energy0 < 0:
+			self.rH0 = [re - xp.log(1 + xp.sqrt(1 + self.Energy0 / De)) / gam, re - xp.log(1 - xp.sqrt(1 + self.Energy0 / De)) / gam]
+		else:
+			self.rH0 = []
 
 	def eqn_H2D(self, t, y):
 		r, phi, pr, pphi = xp.split(y, 4)
 		Eeff = E0**2 * self.env(t)**2 / 4
 		dr = pr / self.mu
-		dphi = pphi / (self.mu * r**2) - self.Omega
+		dphi = pphi / (self.mu * r**2) - self.Omega(t)
 		dpr = pphi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
 		dpphi = -Eeff * self.Dal(r) * xp.sin(2 * phi)
 		return xp.concatenate((dr, dphi, dpr, dpphi), axis=None)
@@ -97,7 +101,7 @@ class DiaMol:
 		Eeff = E0**2 * self.env(t)**2 / 4
 		dr = pr / self.mu
 		dtheta = ptheta / (self.mu * r**2)
-		dphi = pphi / (self.mu * r**2 * xp.sin(theta)**2) - self.Omega
+		dphi = pphi / (self.mu * r**2 * xp.sin(theta)**2) - self.Omega(t)
 		dpr = ptheta**2 / (self.mu * r**3) + pphi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
 		dptheta = pphi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2
 		dpphi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
@@ -111,6 +115,30 @@ class DiaMol:
 			return 1
 		elif self.envelope == 'trapez':
 			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te[2], 0))))
+
+	def initcond(self, N):
+		if self.rH0:
+			r0 = [max(self.r[0], self.rH0[0]), min(self.r[1], self.rH0[1])]
+			r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
+			theta = xp.pi * xp.random.random(N)
+			phi = 2 * xp.pi * xp.random.random(N)
+			P = xp.sqrt(2 * self.mu * (self.Energy0 - self.eps(r)))
+			Theta = xp.pi * xp.random.random(N)
+			Phi = 2 * xp.pi * xp.random.random(N)
+			if self.dimension == 2:
+				pr = P * xp.cos(Phi)
+				pphi = P * xp.sin(Phi)
+				return xp.concatenate((r, phi, pr, pphi), axis=None)
+			elif self.dimension == 3:
+				pr = P * xp.cos(Phi) * xp.sin(Theta)
+				ptheta = P * xp.sin(Phi) * xp.sin(Theta) * r
+				pphi = P * xp.cos(Theta) * r * xp.sin(theta)
+				return xp.concatenate((r, theta, phi, pr, ptheta, pphi), axis=None)
+		else:
+			print('\033[33m          Warning: Empty energy surface (H0>=0 or H0<=-De) \033[00m')
+			return []
+
+
 
 if __name__ == "__main__":
 	main()

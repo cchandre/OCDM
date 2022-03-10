@@ -27,6 +27,7 @@
 
 import numpy as xp
 import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
 
 def run_method(case):
     if case.darkmode:
@@ -41,15 +42,16 @@ def run_method(case):
     plt.rc('ytick', color=cs[1], labelcolor=cs[1])
     plt.rc('image', cmap='bwr')
     print('\033[92m    {} \033[00m'.format(case.__str__()))
-    print('\033[92m    E0 = {:.2f}   Omega = {:.2f}  \033[00m'.format(case.E0, case.Omega))
+    print('\033[92m    E0 = {:.2e}   Omega = {:.2e}  \033[00m'.format(case.E0, case.Omega))
     filestr = type(case).__name__
 
     if case.Method == 'display_potentials':
         plt.rcParams.update({'figure.figsize': [16, 8]})
         fig, axs = plt.subplots(1, 2)
-        axs[0].plot(case.r, case.eps(case.r), cs[1], lw=3, label=r'$\varepsilon(r)$')
-        axs[1].plot(case.r, case.al_para(case.r), cs[2], lw=3, label=r'$\alpha_\parallel(r)$')
-        axs[1].plot(case.r, case.al_perp(case.r), cs[3], lw=3, label=r'$\alpha_\perp(r)$')
+        r = xp.linspace(case.r[0], case.r[1], case.dpi)
+        axs[0].plot(r, case.eps(r), cs[1], lw=3, label=r'$\varepsilon(r)$')
+        axs[1].plot(r, case.al_para(r), cs[2], lw=3, label=r'$\alpha_\parallel(r)$')
+        axs[1].plot(r, case.al_perp(r), cs[3], lw=3, label=r'$\alpha_\perp(r)$')
         for ax in axs:
             ax.set_xlabel(r'$r$')
             ax.legend(loc='upper right', labelcolor='linecolor')
@@ -58,20 +60,27 @@ def run_method(case):
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.pause(0.5)
     elif case.Method == 'display_ZVS':
-        filestr += '_' + 'E0{:.2f}_OM{:.2f}'.format(case.E0, case.Omega).replace('.', '')
+        filestr += '_' + 'E0{:.2e}_OM{:.2e}'.format(case.E0, case.Omega).replace('.', '')
         ig, ax = plt.subplots(1, 1)
+        r = xp.linspace(case.r[0], case.r[1], case.dpi)
         phi = xp.linspace(0, 2*xp.pi, case.dpi)
-        Phi, R = xp.meshgrid(phi, case.r)
-        ZVS = case.VZVS(R, xp.pi/2, Phi, 0)
+        Phi, R = xp.meshgrid(phi, r)
+        ZVS = case.ZVS(R, xp.pi/2, Phi, 0)
         plt.contourf(Phi, R, ZVS, 50, cmap=plt.cm.hot)
         plt.colorbar()
         plt.contour(Phi, R, ZVS, 50, linewidths=1, colors='k', linestyles='solid')
         ax.set_xlabel(r'$\phi$')
         ax.set_ylabel(r'$r$')
-        ax.set_title(r'$V_\mathrm{ZVS,2D}$')
+        ax.set_title(r'Zero-Velocity Surface')
         plt.pause(0.5)
+    elif case.Method == 'dissociation':
+        y0 = case.initcond(case.Ntraj)
+        Tf = case.te.sum()
+        if case.dimension == 2:
+            sol = solve_ivp(case.eqn_H_2D, (0, Tf), y0, t_eval=[0, Tf/2, Tf], atol=case.Precison, rtol=case.Precision)
+        elif case.dimension == 3:
+            sol = solve_ivp(case.eqn_H_3D, (0, Tf), y0, t_eval=[0, Tf/2, Tf], atol=case.Precison, rtol=case.Precision)
 
-#	elif case.Method == 'Poincare':
 
 def save_data(case, data, filestr, info=[]):
     if case.SaveData:
