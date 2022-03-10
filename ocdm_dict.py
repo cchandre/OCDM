@@ -29,7 +29,7 @@ dict = {
         'r': xp.linspace(r[0], r[1], dpi),
         'dim': dimension,
         'E0': E0,
-        'omega': omega,
+        'Omega': Omega,
         'envelope': envelope,
         'te': xp.asarray(te) / 2.42e-5,
         'SaveData': SaveData,

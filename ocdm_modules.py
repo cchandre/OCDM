@@ -41,7 +41,7 @@ def run_method(case):
     plt.rc('ytick', color=cs[1], labelcolor=cs[1])
     plt.rc('image', cmap='bwr')
     print('\033[92m    {} \033[00m'.format(case.__str__()))
-    print('\033[92m    E0 = {:.2f}   omega = {:.2f}  \033[00m'.format(case.E0, case.omega))
+    print('\033[92m    E0 = {:.2f}   Omega = {:.2f}  \033[00m'.format(case.E0, case.Omega))
     filestr = type(case).__name__
 
     if case.Method == 'display_potentials':
@@ -58,11 +58,11 @@ def run_method(case):
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.pause(0.5)
     elif case.Method == 'display_ZVS':
-        filestr += '_' + 'E0{:.2f}_OM{:.2f}'.format(case.E0, case.omega).replace('.', '')
+        filestr += '_' + 'E0{:.2f}_OM{:.2f}'.format(case.E0, case.Omega).replace('.', '')
         ig, ax = plt.subplots(1, 1)
-        phi = xp.linspace(0, 2*xp.pi, self.dpi)
+        phi = xp.linspace(0, 2*xp.pi, case.dpi)
         Phi, R = xp.meshgrid(phi, case.r)
-        ZVS = case.VZVS2D(R, Phi, 0)
+        ZVS = case.VZVS(R, xp.pi/2, Phi, 0)
         plt.contourf(Phi, R, ZVS, 50, cmap=plt.cm.hot)
         plt.colorbar()
         plt.contour(Phi, R, ZVS, 50, linewidths=1, colors='k', linestyles='solid')

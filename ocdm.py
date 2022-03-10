@@ -81,8 +81,7 @@ class DiaMol:
 		self.d_al_perp = lambda r: d_perp_s(r) if r<=r_b[0] else (d_perp_m(r) if r<=r_b[1] else d_perp_l(r))
 		self.Dal = lambda r: self.al_para(r) - self.al_perp(r)
 		self.d_Dal = lambda r: self.d_al_para(r) - self.d_al_perp(r)
-		self.VZVS2D = lambda r, phi, t: -self.mu * self.Omega**2 * r**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
-		self.VZVS3D = lambda r, theta, phi, t: -self.mu * self.Omega**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
+		self.VZVS = lambda r, theta, phi, t: -self.mu * self.Omega**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
 
 	def eqn_H2D(self, t, y):
 		r, phi, pr, pphi = xp.split(y, 4)
