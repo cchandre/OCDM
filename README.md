@@ -24,7 +24,7 @@ ___
 - *r*: array of two floats; minimum and maximum values of *r* for the display of the potentials
 - *dimension*: 2 or 3; dimension of the computation
 - *E0*: float; amplitude of the electric field
-- *omega*: float; value of the frequency of rotation of the polarisation axis
+- *Omega*: float; value of the frequency of rotation of the polarisation axis
 - *envelope*: string ('const', 'sinus', 'trapez'); envelope function of the laser field
 - *te*: array of 3 floats; duration of ramp-up, plateau and ramp-down (in picoseconds)
 ####
