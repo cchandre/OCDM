@@ -5,8 +5,8 @@
 import numpy as xp
 
 
-Method = 'display_V2D'
-r = [30, 60]
+Method = 'display_potentials'
+r = [2.5, 10]
 
 dimension = 2
 
