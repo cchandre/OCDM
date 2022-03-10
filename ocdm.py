@@ -1,7 +1,7 @@
 #
 # BSD 2-Clause License
 #
-# Copyright (c) 2021, Cristel Chandre
+# Copyright (c) 2022, Cristel Chandre
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
