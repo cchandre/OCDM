@@ -9,7 +9,7 @@ r = [2.5, 15]
 
 dimension = 2
 
-E0 = xp.linspace(0, 5e-2, 9)
+E0 = xp.linspace(0, 5e-2, 100)
 Omega = lambda t: 2e-5
 envelope = 'sinus'
 te = [15, 70, 15]
@@ -20,7 +20,7 @@ Ntraj = 1000
 Tol = 1e-5
 
 SaveData = False
-PlotResults = True
+PlotResults = False
 Parallelization = (True, 3)
 
 dpi = 300

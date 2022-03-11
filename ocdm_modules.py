@@ -47,7 +47,7 @@ def run_method(case):
     plt.rc('image', cmap='bwr')
     print('\033[92m    {} \033[00m'.format(case.__str__()))
     filestr = type(case).__name__
-    if case.Method == 'display_potentials':
+    if case.Method == 'plot_potentials':
         plt.rcParams.update({'figure.figsize': [16, 8]})
         fig, axs = plt.subplots(1, 2)
         r = xp.linspace(case.r[0], case.r[1], case.dpi)
@@ -60,8 +60,8 @@ def run_method(case):
         if case.SaveData:
             fig.savefig(filestr + '.png', dpi=case.dpi)
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
-        plt.pause(0.5)
-    elif case.Method == 'display_ZVS':
+        plt.show()
+    elif case.Method == 'plot_ZVS':
         filestr += '_' + 'E0{:.2e}'.format(case.E0).replace('.', '')
         ig, ax = plt.subplots(1, 1)
         r = xp.linspace(case.r[0], case.r[1], case.dpi)
@@ -77,7 +77,7 @@ def run_method(case):
         if case.SaveData:
             fig.savefig(filestr + '.png', dpi=case.dpi)
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
-        plt.pause(0.5)
+        plt.show()
     elif case.Method == 'dissociation':
         y0 = case.initcond(case.Ntraj)
         Tf = case.te.sum()

@@ -26,7 +26,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import numpy as xp
-import matplotlib.pyplot as plt
 import sympy as sp
 from ocdm_modules import run_method
 from ocdm_dict import dict_list, Parallelization, Omega
@@ -47,7 +46,6 @@ def main():
 	else:
 		for dict in dict_list:
 			run_case(dict)
-	plt.show()
 
 class DiaMol:
 	def __repr__(self):
@@ -86,11 +84,11 @@ class DiaMol:
 		para_s, perp_s = sp.lambdify(r, para_s), sp.lambdify(r, perp_s)
 		para_m, perp_m = sp.lambdify(r, para_m), sp.lambdify(r, perp_m)
 		para_l, perp_l = sp.lambdify(r, para_l), sp.lambdify(r, perp_l)
-		al_para = lambda r: xp.where(r<=r_a[0], para_s(r), xp.where(r<=r_a[1], para_m(r), para_l(r)))
+		self.al_para = lambda r: xp.where(r<=r_a[0], para_s(r), xp.where(r<=r_a[1], para_m(r), para_l(r)))
 		self.al_perp = lambda r: xp.where(r<=r_b[0], perp_s(r), xp.where(r<=r_b[1], perp_m(r), perp_l(r)))
 		d_al_para = lambda r: xp.where(r<=r_a[0], d_para_s(r), xp.where(r<=r_a[1], d_para_m(r), d_para_l(r)))
 		self.d_al_perp = lambda r: xp.where(r<=r_b[0], d_perp_s(r), xp.where(r<=r_b[1], d_perp_m(r), d_perp_l(r)))
-		self.Dal = lambda r: al_para(r) - self.al_perp(r)
+		self.Dal = lambda r: self.al_para(r) - self.al_perp(r)
 		self.d_Dal = lambda r: d_al_para(r) - self.d_al_perp(r)
 		self.ZVS = lambda r, theta, phi, t: -self.mu * self.Omega(t)**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
 		if -De < self.Energy0 < 0:
