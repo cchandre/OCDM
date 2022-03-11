@@ -4,26 +4,26 @@
 
 import numpy as xp
 
-Method = 'dissociation'
+Method = 'plot_trajectories'
 r = [2.5, 15]
 
 dimension = 2
 
-E0 = xp.linspace(0, 5e-2, 100)
+E0 = 5e-1
 Omega = lambda t: 2e-5
 envelope = 'sinus'
 te = [15, 70, 15]
 
 Energy0 = -0.001
 
-Ntraj = 1000
+Ntraj = 2
 Tol = 1e-5
 
 SaveData = False
 PlotResults = False
-Parallelization = (True, 3)
+Parallelization = (False, 3)
 
-dpi = 300
+dpi = 1000
 darkmode = True
 
 ###################################################################################################

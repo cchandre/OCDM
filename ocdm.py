@@ -163,5 +163,37 @@ class DiaMol:
 			H = (pr**2 + ptheta**2 / r**2 + pphi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r)
 		return (H > 0)
 
+	def cart2pol(self, y):
+		if self.dim == 2:
+			x, y, px, py = xp.split(y, 4)
+			phi = xp.arctan2(y, x)
+			r = xp.hypot(x, y)
+			pr = (x * px + y * py) / r
+			pphi = x * py - y * px
+			return xp.concatenate((r, phi, pr, pphi))
+		elif self.dim == 3:
+			x, y, z, px, py, pz = xp.split(y, 6)
+			xy, r = xp.hypot(x, y), xp.hypot(xy, z)
+			theta, phi = xp.arctan2(z, hxy), xp.arctan2(y, x)
+			pr = (x * px + y * py + z * pz) / r
+			ptheta = ((x * px +y * py) * z - pz * xy**2) / xy
+			pphi = x * py - y * px
+			return xp.concatenate((r, theta, phi, pr, ptheta, pphi))
+
+	def pol2cart(self, y):
+		if self.dim == 2:
+			r, phi, pr, pphi = xp.split(y, 4)
+			x, y = r * xp.cos(phi), r * xp.sin(phi)
+			px = pr * xp.cos(phi) - pphi * xp.sin(phi) / r
+			py = pr * xp.sin(phi) + pphi * xp.cos(phi) / r
+			return xp.concatenate((x, y, px, py))
+		elif self.dim == 3:
+			r, theta, phi, pr, ptheta, pphi = xp.split(y, 6)
+			x, y, z = r * xp.sin(theta) * xp.cos(phi), r * xp.sin(theta) * xp.sin(phi), r * xp.cos(theta)
+			px = pr * xp.sin(theta) * xp.cos(phi) + ptheta * xp.cos(theta) * xp.cos(phi) / r - pphi * xp.sin(phi) / (r * xp.sin(theta))
+			py = pr * xp.sin(theta) * xp.sin(phi) + ptheta * xp.cos(theta) * xp.sin(phi) / r + pphi * xp.cos(phi) / (r * xp.sin(theta))
+			pz = pr * xp.cos(theta) - ptheta * xp.sin(theta) / r
+			return xp.concatenate((x, y, z, px, py, pz))
+
 if __name__ == "__main__":
 	main()

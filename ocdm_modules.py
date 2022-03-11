@@ -35,9 +35,9 @@ import os
 
 def run_method(case):
     if case.darkmode:
-        cs = ['k', 'w', 'c', 'm']
+        cs = ['k', 'w', 'c', 'm', 'r']
     else:
-        cs = ['w', 'k', 'b', 'm']
+        cs = ['w', 'k', 'b', 'm', 'r']
     plt.rc('figure', facecolor=cs[0], titlesize=30, figsize=[8,8])
     plt.rc('text', usetex=True, color=cs[1])
     plt.rc('font', family='serif', size=24)
@@ -45,7 +45,6 @@ def run_method(case):
     plt.rc('xtick', color=cs[1], labelcolor=cs[1])
     plt.rc('ytick', color=cs[1], labelcolor=cs[1])
     plt.rc('image', cmap='bwr')
-    print('\033[92m    {} \033[00m'.format(case.__str__()))
     filestr = type(case).__name__
     if case.Method == 'plot_potentials':
         plt.rcParams.update({'figure.figsize': [16, 8]})
@@ -63,7 +62,7 @@ def run_method(case):
         plt.show()
     elif case.Method == 'plot_ZVS':
         filestr += '_' + 'E0{:.2e}'.format(case.E0).replace('.', '')
-        ig, ax = plt.subplots(1, 1)
+        fig, ax = plt.subplots(1, 1)
         r = xp.linspace(case.r[0], case.r[1], case.dpi)
         phi = xp.linspace(0, 2*xp.pi, case.dpi)
         Phi, R = xp.meshgrid(phi, r)
@@ -90,6 +89,41 @@ def run_method(case):
             file.writelines('%   E0           proba \n')
         file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
         file.close()
+    elif case.Method == 'plot_trajectories':
+        y0 = case.initcond(case.Ntraj)
+        Tf = case.te.sum()
+        t_eval = xp.linspace(0, Tf, case.dpi)
+        sol = solve_ivp(case.eqn_H, (0, Tf), y0, t_eval=t_eval, atol=case.Tol, rtol=case.Tol)
+        fig = plt.figure(figsize=(8, 10))
+        axs = fig.add_gridspec(2, hspace=0.2).subplots(sharex=True)
+        te = xp.cumsum(case.te)
+        for ax in axs:
+            for t in te:
+                ax.axvline(x=t, lw=1, color=cs[1])
+            ax.set_xlim((t_eval[0], t_eval[-1]))
+            ax.set_xlabel(r'$t$')
+        yc = case.pol2cart(sol.y).transpose()
+        if case.dim == 2:
+            x, y, px, py = xp.split(yc, 4, axis=1)
+            axs[0].plot(t_eval, x, cs[2], label=r'$x$')
+            axs[0].plot(t_eval, y, cs[3], label=r'$y$')
+            axs[1].plot(t_eval, px, cs[2], label=r'$p_x$')
+            axs[1].plot(t_eval, py, cs[3], label=r'$p_y$')
+            axs[0].set_ylabel(r'$x$, $y$')
+            axs[1].set_ylabel(r'$p_x$, $p_y$')
+        elif case.dim == 3:
+            x, y, z, px, py, pz = xp.split(yc, 6, axis=1)
+            axs[0].plot(t_eval, x, cs[2], label=r'$x$')
+            axs[0].plot(t_eval, y, cs[3], label=r'$y$')
+            axs[0].plot(t_eval, z, cs[4], label=r'$z$')
+            axs[1].plot(t_eval, px, cs[2], label=r'$p_x$')
+            axs[1].plot(t_eval, py, cs[3], label=r'$p_y$')
+            axs[1].plot(t_eval, pz, cs[4], label=r'$p_z$')
+            axs[0].set_ylabel(r'$x$, $y$, $z$')
+            axs[1].set_ylabel(r'$p_x$, $p_y$, $p_z$')
+        for ax in axs:
+            ax.legend(loc='upper right', labelcolor='linecolor')
+        plt.show()
 
 def save_data(case, data, filestr, info=[]):
     if case.SaveData:
