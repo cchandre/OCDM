@@ -29,14 +29,24 @@ import numpy as xp
 import matplotlib.pyplot as plt
 import sympy as sp
 from ocdm_modules import run_method
-from ocdm_dict import dict
+from ocdm_dict import dict_list, Parallelization, Omega
+import multiprocessing
 
 def run_case(dict):
 	case = DiaMol(dict)
 	run_method(case)
 
 def main():
-	run_case(dict)
+	if Parallelization[0]:
+		if Parallelization[1] == 'all':
+			num_cores = multiprocessing.cpu_count()
+		else:
+			num_cores = min(multiprocessing.cpu_count(), Parallelization[1])
+		pool = multiprocessing.Pool(num_cores)
+		pool.map(run_case, dict_list)
+	else:
+		for dict in dict_list:
+			run_case(dict)
 	plt.show()
 
 class DiaMol:
@@ -44,12 +54,13 @@ class DiaMol:
 		return '{self.__class__.__name__}({self.DictParams})'.format(self=self)
 
 	def __str__(self):
-		return 'Optical Centrifuge for Diatomic Molecules ({self.__class__.__name__})'.format(self=self)
+		return 'Optical Centrifuge for Diatomic Molecules ({}) with E0 = {:.3e}'.format(self.__class__.__name__, self.E0)
 
 	def __init__(self, dict):
 		for key in dict:
 			setattr(self, key, dict[key])
 		self.DictParams = dict
+		self.Omega = lambda t: Omega(t)
 		a_s = [42.13, 15.4, 5.4, -5.25]
 		a_m = [-18648.35842481222, 13674.730066523876, -3950.494622828384, 564.5884199329207, -39.995975029375124, 1.125168670489689]
 		r_a = [5.5, 7.8]
@@ -75,37 +86,46 @@ class DiaMol:
 		para_s, perp_s = sp.lambdify(r, para_s), sp.lambdify(r, perp_s)
 		para_m, perp_m = sp.lambdify(r, para_m), sp.lambdify(r, perp_m)
 		para_l, perp_l = sp.lambdify(r, para_l), sp.lambdify(r, perp_l)
-		self.al_para = lambda r: xp.where(r<=r_a[0], para_s(r), xp.where(r<=r_a[1], para_m(r), para_l(r)))
+		al_para = lambda r: xp.where(r<=r_a[0], para_s(r), xp.where(r<=r_a[1], para_m(r), para_l(r)))
 		self.al_perp = lambda r: xp.where(r<=r_b[0], perp_s(r), xp.where(r<=r_b[1], perp_m(r), perp_l(r)))
-		self.d_al_para = lambda r: d_para_s(r) if r<=r_a[0] else (d_para_m(r) if r<=r_a[1] else d_para_l(r))
-		self.d_al_perp = lambda r: d_perp_s(r) if r<=r_b[0] else (d_perp_m(r) if r<=r_b[1] else d_perp_l(r))
-		self.Dal = lambda r: self.al_para(r) - self.al_perp(r)
-		self.d_Dal = lambda r: self.d_al_para(r) - self.d_al_perp(r)
+		d_al_para = lambda r: xp.where(r<=r_a[0], d_para_s(r), xp.where(r<=r_a[1], d_para_m(r), d_para_l(r)))
+		self.d_al_perp = lambda r: xp.where(r<=r_b[0], d_perp_s(r), xp.where(r<=r_b[1], d_perp_m(r), d_perp_l(r)))
+		self.Dal = lambda r: al_para(r) - self.al_perp(r)
+		self.d_Dal = lambda r: d_al_para(r) - self.d_al_perp(r)
 		self.ZVS = lambda r, theta, phi, t: -self.mu * self.Omega(t)**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
 		if -De < self.Energy0 < 0:
 			self.rH0 = [re - xp.log(1 + xp.sqrt(1 + self.Energy0 / De)) / gam, re - xp.log(1 - xp.sqrt(1 + self.Energy0 / De)) / gam]
 		else:
 			self.rH0 = []
 
-	def eqn_H2D(self, t, y):
-		r, phi, pr, pphi = xp.split(y, 4)
-		Eeff = E0**2 * self.env(t)**2 / 4
-		dr = pr / self.mu
-		dphi = pphi / (self.mu * r**2) - self.Omega(t)
-		dpr = pphi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
-		dpphi = -Eeff * self.Dal(r) * xp.sin(2 * phi)
-		return xp.concatenate((dr, dphi, dpr, dpphi), axis=None)
+	def eqn_H(self, t, y):
+		Eeff = self.E0**2 * self.env(t)**2 / 4
+		if self.dim == 2:
+			r, phi, pr, pphi = xp.split(y, 4)
+			dr = pr / self.mu
+			dphi = pphi / (self.mu * r**2) - self.Omega(t)
+			dpr = pphi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
+			dpphi = -Eeff * self.Dal(r) * xp.sin(2 * phi)
+			return xp.concatenate((dr, dphi, dpr, dpphi), axis=None)
+		elif self.dim == 3:
+			r, theta, phi, pr, ptheta, pphi = xp.split(y, 6)
+			dr = pr / self.mu
+			dtheta = ptheta / (self.mu * r**2)
+			dphi = pphi / (self.mu * r**2 * xp.sin(theta)**2) - self.Omega(t)
+			dpr = ptheta**2 / (self.mu * r**3) + pphi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
+			dptheta = pphi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2
+			dpphi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
+			return xp.concatenate((dr, dtheta, dphi, dpr, dptheta, dpphi), axis=None)
 
-	def eqn_H3D(self, t, y):
-		r, theta, phi, pr, ptheta, pphi = xp.split(y, 6)
-		Eeff = E0**2 * self.env(t)**2 / 4
-		dr = pr / self.mu
-		dtheta = ptheta / (self.mu * r**2)
-		dphi = pphi / (self.mu * r**2 * xp.sin(theta)**2) - self.Omega(t)
-		dpr = ptheta**2 / (self.mu * r**3) + pphi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
-		dptheta = pphi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2
-		dpphi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
-		return xp.concatenate((dr, dtheta, dphi, dpr, dptheta, dpphi), axis=None)
+	def energy(self, t, y):
+		Eeff = self.E0**2 * self.env(t)**2 / 4
+		if self.dim == 2:
+			r, phi, pr, pphi = xp.split(y, 4)
+			H = (pr**2 + pphi**2 / r**2) / (2 * self.mu) + self.eps(r) - self.Omega(t) * pphi - Eeff * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
+		elif self.dim == 3:
+			r, theta, phi, pr, ptheta, pphi = xp.split(y, 6)
+			H = (pr**2 + ptheta**2 / r**2 + pphi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r) - self.Omega(t) * pphi - Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
+		return H
 
 	def env(self, t):
 		te = xp.cumsum(self.te)
@@ -120,25 +140,30 @@ class DiaMol:
 		if self.rH0:
 			r0 = [max(self.r[0], self.rH0[0]), min(self.r[1], self.rH0[1])]
 			r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
-			theta = xp.pi * xp.random.random(N)
-			phi = 2 * xp.pi * xp.random.random(N)
+			theta = xp.pi * xp.random.random((2, N))
+			phi = 2 * xp.pi * xp.random.random((2, N))
 			P = xp.sqrt(2 * self.mu * (self.Energy0 - self.eps(r)))
-			Theta = xp.pi * xp.random.random(N)
-			Phi = 2 * xp.pi * xp.random.random(N)
-			if self.dimension == 2:
-				pr = P * xp.cos(Phi)
-				pphi = P * xp.sin(Phi)
-				return xp.concatenate((r, phi, pr, pphi), axis=None)
-			elif self.dimension == 3:
-				pr = P * xp.cos(Phi) * xp.sin(Theta)
-				ptheta = P * xp.sin(Phi) * xp.sin(Theta) * r
-				pphi = P * xp.cos(Theta) * r * xp.sin(theta)
-				return xp.concatenate((r, theta, phi, pr, ptheta, pphi), axis=None)
+			if self.dim == 2:
+				pr = P * xp.cos(phi[1])
+				pphi = P * xp.sin(phi[1]) * r
+				return xp.concatenate((r, phi[0], pr, pphi), axis=None)
+			elif self.dim == 3:
+				pr = P * xp.cos(phi[1]) * xp.sin(theta[1])
+				ptheta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
+				pphi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
+				return xp.concatenate((r, theta[0], phi[0], pr, ptheta, pphi), axis=None)
 		else:
 			print('\033[33m          Warning: Empty energy surface (H0>=0 or H0<=-De) \033[00m')
 			return []
 
-
+	def check_dissociation(self, y):
+		if self.dim == 2:
+			r, phi, pr, pphi = xp.split(y, 4)
+			H = (pr**2 + pphi**2 / r**2) / (2 * self.mu) + self.eps(r)
+		elif self.dim == 3:
+			r, theta, phi, pr, ptheta, pphi = xp.split(y, 6)
+			H = (pr**2 + ptheta**2 / r**2 + pphi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r)
+		return (H > 0)
 
 if __name__ == "__main__":
 	main()

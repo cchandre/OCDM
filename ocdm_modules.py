@@ -28,6 +28,10 @@
 import numpy as xp
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
+from scipy.io import savemat
+import time
+from datetime import date
+import os
 
 def run_method(case):
     if case.darkmode:
@@ -42,9 +46,7 @@ def run_method(case):
     plt.rc('ytick', color=cs[1], labelcolor=cs[1])
     plt.rc('image', cmap='bwr')
     print('\033[92m    {} \033[00m'.format(case.__str__()))
-    print('\033[92m    E0 = {:.2e}   Omega = {:.2e}  \033[00m'.format(case.E0, case.Omega))
     filestr = type(case).__name__
-
     if case.Method == 'display_potentials':
         plt.rcParams.update({'figure.figsize': [16, 8]})
         fig, axs = plt.subplots(1, 2)
@@ -60,7 +62,7 @@ def run_method(case):
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.pause(0.5)
     elif case.Method == 'display_ZVS':
-        filestr += '_' + 'E0{:.2e}_OM{:.2e}'.format(case.E0, case.Omega).replace('.', '')
+        filestr += '_' + 'E0{:.2e}'.format(case.E0).replace('.', '')
         ig, ax = plt.subplots(1, 1)
         r = xp.linspace(case.r[0], case.r[1], case.dpi)
         phi = xp.linspace(0, 2*xp.pi, case.dpi)
@@ -72,15 +74,22 @@ def run_method(case):
         ax.set_xlabel(r'$\phi$')
         ax.set_ylabel(r'$r$')
         ax.set_title(r'Zero-Velocity Surface')
+        if case.SaveData:
+            fig.savefig(filestr + '.png', dpi=case.dpi)
+            print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.pause(0.5)
     elif case.Method == 'dissociation':
         y0 = case.initcond(case.Ntraj)
         Tf = case.te.sum()
-        if case.dimension == 2:
-            sol = solve_ivp(case.eqn_H_2D, (0, Tf), y0, t_eval=[0, Tf/2, Tf], atol=case.Precison, rtol=case.Precision)
-        elif case.dimension == 3:
-            sol = solve_ivp(case.eqn_H_3D, (0, Tf), y0, t_eval=[0, Tf/2, Tf], atol=case.Precison, rtol=case.Precision)
-
+        sol = solve_ivp(case.eqn_H, (0, Tf), y0, t_eval=[0, Tf/2, Tf], atol=case.Tol, rtol=case.Tol)
+        proba = case.check_dissociation(sol.y[:, -1]).sum() / case.Ntraj
+        print('\033[96m          for E0 = {:.3e}, dissociation probability = {:.3e} \033[00m'.format(case.E0, proba))
+        vec_data = [case.E0, proba]
+        file = open(type(case).__name__ + '_' + case.Method + '.txt', 'a')
+        if os.path.getsize(file.name) == 0:
+            file.writelines('%   E0           proba \n')
+        file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
+        file.close()
 
 def save_data(case, data, filestr, info=[]):
     if case.SaveData:
