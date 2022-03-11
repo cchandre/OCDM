@@ -19,7 +19,7 @@ nohup python3 -u ocdm.py &>ocdm.out < /dev/null &
 ___
 ##  Parameter dictionary
 
-- *Method*: string; 'plot_potentials', 'plot_ZVS', 'dissociation'
+- *Method*: string; 'plot_potentials', 'plot_ZVS', 'dissociation', 'plot_trajectories'
 ####
 - *r*: array of two floats; minimum and maximum values of *r* for the display of the potentials and selection of initial conditions
 - *dimension*: 2 or 3; dimension of the computation
