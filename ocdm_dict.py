@@ -10,7 +10,7 @@ r = [2.5, 15]
 dimension = 2
 
 E0 = xp.linspace(0, 5e-2, 9)
-Omega = lambda t: 2e-5 * t
+Omega = lambda t: 2e-5
 envelope = 'sinus'
 te = [15, 70, 15]
 
