@@ -166,15 +166,14 @@ class DiaMol:
 	def cart2pol(self, y):
 		if self.dim == 2:
 			x, y, px, py = xp.split(y, 4)
-			phi = xp.arctan2(y, x)
-			r = xp.hypot(x, y)
+			r, phi = xp.hypot(x, y), xp.arctan2(y, x)
 			pr = (x * px + y * py) / r
 			pphi = x * py - y * px
 			return xp.concatenate((r, phi, pr, pphi))
 		elif self.dim == 3:
 			x, y, z, px, py, pz = xp.split(y, 6)
-			xy, r = xp.hypot(x, y), xp.hypot(xy, z)
-			theta, phi = xp.arctan2(z, hxy), xp.arctan2(y, x)
+			xy, phi = xp.hypot(x, y), xp.arctan2(y, x)
+			r, theta = xp.hypot(xy, z), xp.arctan2(z, hxy)
 			pr = (x * px + y * py + z * pz) / r
 			ptheta = ((x * px +y * py) * z - pz * xy**2) / xy
 			pphi = x * py - y * px
