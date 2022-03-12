@@ -36,6 +36,7 @@ def run_case(dict):
 	run_method(case)
 
 def main():
+	print('\033[92m  Optical Centrifuge for Diatomic Molecules  \033[00m')
 	if Parallelization[0]:
 		if Parallelization[1] == 'all':
 			num_cores = multiprocessing.cpu_count()

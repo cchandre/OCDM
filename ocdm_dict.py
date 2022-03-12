@@ -18,6 +18,7 @@ Energy0 = -0.001
 
 Ntraj = 2
 Tol = 1e-5
+type_traj = 'all'
 
 SaveData = False
 PlotResults = False
@@ -40,6 +41,7 @@ for _, E in enumerate(xp.atleast_1d(E0)):
         'Energy0': Energy0,
         'Ntraj': Ntraj,
         'Tol': Tol,
+		'type_traj': type_traj,
         'SaveData': SaveData,
         'PlotResults': PlotResults,
         'dpi': dpi,

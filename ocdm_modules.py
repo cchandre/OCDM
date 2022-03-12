@@ -82,47 +82,55 @@ def run_method(case):
         t_eval = xp.linspace(0, case.te.sum(), case.dpi)
         if case.Method == 'dissociation':
             t_eval = [t_eval[0], t_eval[-1]]
-        sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, t_eval=t_eval, atol=case.Tol, rtol=case.Tol)
-        if case.Method == 'dissociation':
-            proba = case.check_dissociation(sol.y[:, -1]).sum() / case.Ntraj
-            print('\033[96m          for E0 = {:.3e}, dissociation probability = {:.3e} \033[00m'.format(case.E0, proba))
-            vec_data = [case.E0, proba]
-            file = open(type(case).__name__ + '_' + case.Method + '.txt', 'a')
-            if os.path.getsize(file.name) == 0:
-                file.writelines('%   E0           proba \n')
-                file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
-                file.close()
-        elif case.Method == 'plot_trajectories':
-            fig = plt.figure(figsize=(8, 10))
-            axs = fig.add_gridspec(2, hspace=0.2).subplots(sharex=True)
-            te = xp.cumsum(case.te)
-            for ax in axs:
-                for t in te:
-                    ax.axvline(x=t, lw=1, color=cs[1])
-                ax.set_xlim((t_eval[0], t_eval[-1]))
-                ax.set_xlabel(r'$t$')
-            yc = case.pol2cart(sol.y).transpose()
-            if case.dim == 2:
-                x, y, px, py = xp.split(yc, 4, axis=1)
-                axs[0].plot(t_eval, x, cs[2], label=r'$x$')
-                axs[0].plot(t_eval, y, cs[3], label=r'$y$')
-                axs[1].plot(t_eval, px, cs[2], label=r'$p_x$')
-                axs[1].plot(t_eval, py, cs[3], label=r'$p_y$')
-                axs[0].set_ylabel(r'$x$, $y$')
-                axs[1].set_ylabel(r'$p_x$, $p_y$')
-            elif case.dim == 3:
-                x, y, z, px, py, pz = xp.split(yc, 6, axis=1)
-                axs[0].plot(t_eval, x, cs[2], label=r'$x$')
-                axs[0].plot(t_eval, y, cs[3], label=r'$y$')
-                axs[0].plot(t_eval, z, cs[4], label=r'$z$')
-                axs[1].plot(t_eval, px, cs[2], label=r'$p_x$')
-                axs[1].plot(t_eval, py, cs[3], label=r'$p_y$')
-                axs[1].plot(t_eval, pz, cs[4], label=r'$p_z$')
-                axs[0].set_ylabel(r'$x$, $y$, $z$')
-                axs[1].set_ylabel(r'$p_x$, $p_y$, $p_z$')
-            for ax in axs:
-                ax.legend(loc='upper right', labelcolor='linecolor')
-            plt.show()
+		if y0:
+        	sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, t_eval=t_eval, atol=case.Tol, rtol=case.Tol)
+			dissociated = case.check_dissociation(sol.y[:, -1])
+        	if case.Method == 'dissociation':
+            	proba = dissociated.sum() / case.Ntraj
+            	print('\033[96m          for E0 = {:.3e}, dissociation probability = {:.3e} \033[00m'.format(case.E0, proba))
+            	vec_data = [case.E0, proba]
+            	file = open(type(case).__name__ + '_' + case.Method + '.txt', 'a')
+            	if os.path.getsize(file.name) == 0:
+                	file.writelines('%   E0           proba \n')
+                	file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
+                	file.close()
+        	elif case.Method == 'plot_trajectories':
+            	fig = plt.figure(figsize=(8, 10))
+            	axs = fig.add_gridspec(2, hspace=0.2).subplots(sharex=True)
+            	te = xp.cumsum(case.te)
+            	for ax in axs:
+                	for t in te:
+                    	ax.axvline(x=t, lw=1, color=cs[1])
+                	ax.set_xlim((t_eval[0], t_eval[-1]))
+                	ax.set_xlabel(r'$t$')
+            	yc = case.pol2cart(sol.y).transpose()
+				if case.type_traj == 'dissociated' and xp.any(dissociated):
+					yc = yc[:, dissociated]
+				elif case.type_traj == 'not_dissociated' and (not xp.all(dissociated)):
+					yc = yc[:, xp.logical_not(dissociated)]
+				elif case.type_traj != 'all':
+					print('\033[96m     Warning: All trajectories are displayed \033[00m')   
+            	if case.dim == 2:
+                	x, y, px, py = xp.split(yc, 4, axis=1)
+                	axs[0].plot(t_eval, x, cs[2], label=r'$x$')
+                	axs[0].plot(t_eval, y, cs[3], label=r'$y$')
+                	axs[1].plot(t_eval, px, cs[2], label=r'$p_x$')
+                	axs[1].plot(t_eval, py, cs[3], label=r'$p_y$')
+                	axs[0].set_ylabel(r'$x$, $y$')
+                	axs[1].set_ylabel(r'$p_x$, $p_y$')
+            	elif case.dim == 3:
+                	x, y, z, px, py, pz = xp.split(yc, 6, axis=1)
+                	axs[0].plot(t_eval, x, cs[2], label=r'$x$')
+                	axs[0].plot(t_eval, y, cs[3], label=r'$y$')
+                	axs[0].plot(t_eval, z, cs[4], label=r'$z$')
+                	axs[1].plot(t_eval, px, cs[2], label=r'$p_x$')
+                	axs[1].plot(t_eval, py, cs[3], label=r'$p_y$')
+                	axs[1].plot(t_eval, pz, cs[4], label=r'$p_z$')
+                	axs[0].set_ylabel(r'$x$, $y$, $z$')
+                	axs[1].set_ylabel(r'$p_x$, $p_y$, $p_z$')
+            	for ax in axs:
+                	ax.legend(loc='upper right', labelcolor='linecolor')
+            	plt.show()
 
 def save_data(case, data, filestr, info=[]):
     if case.SaveData:
