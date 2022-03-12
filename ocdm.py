@@ -176,7 +176,7 @@ class DiaMol:
 			xy, phi = xp.hypot(x, y), xp.arctan2(y, x)
 			r, theta = xp.hypot(xy, z), xp.arctan2(z, hxy)
 			pr = (x * px + y * py + z * pz) / r
-			ptheta = ((x * px +y * py) * z - pz * xy**2) / xy
+			ptheta = ((x * px + y * py) * z - pz * xy**2) / xy
 			pphi = x * py - y * px
 			return xp.concatenate((r, theta, phi, pr, ptheta, pphi))
 

@@ -4,7 +4,7 @@
 
 import numpy as xp
 
-Method = 'plot_trajectories'
+Method = 'trajectories'
 r = [2.5, 15]
 
 dimension = 2
@@ -18,7 +18,7 @@ Energy0 = -0.001
 
 Ntraj = 2
 Tol = 1e-5
-type_traj = 'all'
+plot_traj = 'all'
 
 SaveData = False
 PlotResults = False

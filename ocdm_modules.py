@@ -77,13 +77,16 @@ def run_method(case):
             fig.savefig(filestr + '.png', dpi=case.dpi)
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.show()
-    elif case.Method in ['dissociation', 'plot_trajectories']:
+    elif case.Method in ['dissociation', 'trajectories']:
         y0 = case.initcond(case.Ntraj)
         t_eval = xp.linspace(0, case.te.sum(), case.dpi)
         if case.Method == 'dissociation':
             t_eval = [t_eval[0], t_eval[-1]]
 		if y0:
         	sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, t_eval=t_eval, atol=case.Tol, rtol=case.Tol)
+			if case.SaveData:
+				save_data(case, sol.y, filestr)
+				print('\033[90m        Data saved in {}.mat \033[00m'.format(filestr))
 			dissociated = case.check_dissociation(sol.y[:, -1])
         	if case.Method == 'dissociation':
             	proba = dissociated.sum() / case.Ntraj
@@ -94,7 +97,7 @@ def run_method(case):
                 	file.writelines('%   E0           proba \n')
                 	file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
                 	file.close()
-        	elif case.Method == 'plot_trajectories':
+        	elif case.Method == 'trajectories' and case.PlotResults:
             	fig = plt.figure(figsize=(8, 10))
             	axs = fig.add_gridspec(2, hspace=0.2).subplots(sharex=True)
             	te = xp.cumsum(case.te)
@@ -104,12 +107,12 @@ def run_method(case):
                 	ax.set_xlim((t_eval[0], t_eval[-1]))
                 	ax.set_xlabel(r'$t$')
             	yc = case.pol2cart(sol.y).transpose()
-				if case.type_traj == 'dissociated' and xp.any(dissociated):
+				if case.plot_traj == 'dissociated' and xp.any(dissociated):
 					yc = yc[:, dissociated]
-				elif case.type_traj == 'not_dissociated' and (not xp.all(dissociated)):
+				elif case.plot_traj == 'not_dissociated' and (not xp.all(dissociated)):
 					yc = yc[:, xp.logical_not(dissociated)]
-				elif case.type_traj != 'all':
-					print('\033[96m     Warning: All trajectories are displayed \033[00m')   
+				elif case.plot_traj != 'all':
+					print('\033[96m     Warning: All trajectories are being displayed \033[00m')   
             	if case.dim == 2:
                 	x, y, px, py = xp.split(yc, 4, axis=1)
                 	axs[0].plot(t_eval, x, cs[2], label=r'$x$')
