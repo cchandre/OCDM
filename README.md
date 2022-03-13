@@ -15,11 +15,11 @@ or
 ```sh
 nohup python3 -u ocdm.py &>ocdm.out < /dev/null &
 ```
-
+The list of Python packages and their version are specified in [`requirements.txt`](https://github.com/cchandre/OCDM/blob/main/requirements.txt)
 ___
 ##  Parameter dictionary
 
-- *Method*: string; 'plot_potentials', 'plot_ZVS', 'dissociation', 'plot_trajectories'
+- *Method*: string; 'plot_potentials', 'plot_ZVS', 'dissociation', 'trajectories'
 ####
 - *r*: array of two floats; minimum and maximum values of *r* for the display of the potentials and selection of initial conditions
 - *dimension*: 2 or 3; dimension of the computation
@@ -30,6 +30,7 @@ ___
 - *Energy0*: float (negative); value of the initial energy
 - *Ntraj*: integer; number of trajectories to be integrated
 - *Tol*: float; tolerance of the numerical integration 
+- *plot_traj*: array of two strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical'] for the type of trajectories to be plotted
 ####
 - *SaveData*: boolean; if True, the results are saved in a `.mat` file
 - *PlotResults*: boolean; if True, the results are plotted right after the computation
