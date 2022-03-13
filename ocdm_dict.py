@@ -41,7 +41,7 @@ for _, E in enumerate(xp.atleast_1d(E0)):
         'Energy0': Energy0,
         'Ntraj': Ntraj,
         'Tol': Tol,
-		'type_traj': type_traj,
+		'plot_traj': plot_traj,
         'SaveData': SaveData,
         'PlotResults': PlotResults,
         'dpi': dpi,
