@@ -137,7 +137,7 @@ class DiaMol:
 
 	def initcond(self, N):
 		if self.rH0:
-			if (xp.min(self.r) > xp.max(self.rH0)) and (xp.min(self.rH0) > xp.max(self.r)):
+			if (self.r[1] > self.rH0[0]) and (self.rH0[1] > self.r[0]):
 				r0 = [max(self.r[0], self.rH0[0]), min(self.r[1], self.rH0[1])]
 				r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
 				theta = xp.pi * xp.random.random((2, N))
