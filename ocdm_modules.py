@@ -99,40 +99,54 @@ def run_method(case):
                 	file.close()
         	elif case.Method == 'trajectories' and case.PlotResults:
             	fig = plt.figure(figsize=(8, 10))
-            	axs = fig.add_gridspec(2, hspace=0.2).subplots(sharex=True)
+				if case.plot_traj[1] == 'cartesian':
+            		axs = fig.add_gridspec(2, hspace=0.2).subplots(sharex=True)
+				elif case.plot_traj[1] == 'spherical':
+					axs = fig.add_gridspec(3, hspace=0.2).subplots(sharex=True)
             	te = xp.cumsum(case.te)
             	for ax in axs:
                 	for t in te:
                     	ax.axvline(x=t, lw=1, color=cs[1])
                 	ax.set_xlim((t_eval[0], t_eval[-1]))
                 	ax.set_xlabel(r'$t$')
-            	yc = case.pol2cart(sol.y).transpose()
-				if case.plot_traj == 'dissociated' and xp.any(dissociated):
+				if case.dim == 2:
+					panels = [1, 1, 0, 0]
+					colors = [cs[2], cs[3], cs[2], cs[3]]
+				elif case.dim == 3:
+					panels = [1, 1, 1, 0, 0, 0]
+					colors = [cs[2], cs[3], cs[4], cs[2], cs[3], cs[4]]
+				if case.plot_traj[1] == 'cartesian':
+            		yc = case.pol2cart(sol.y).transpose()
+					if case.dim == 2:
+						labels = [r'$x$', r'$y$', r'$p_x$', r'$p_y$']
+						ylabels = [r'$p_x$, $p_y$', r'$x$, $y$']
+					elif case.dim == 3:
+						labels = [r'$x$', r'$y$', r'$z$', r'$p_x$', r'$p_y$', r'$p_z$']
+						ylabels = [r'$p_x$, $p_y$, $p_z$', r'$x$, $y$, $z$']
+				elif case.plot_traj[1] == 'spherical':
+					yc = sol.y.transpose()
+					if case.dim == 2:
+						labels = [r'$r$', r'$\phi$', r'$p_r$', r'$p_\phi$']
+						ylabels = [r'$p_r$, $p_\phi$', r'$r$', r'$\phi$']
+						panels[1] = 2
+					elif case.dim == 3:
+						labels = [r'$r$', r'$\theta$', r'$\phi$', r'$p_r$', r'$p_\theta$', r'$p_\phi$']
+						ylabels = [r'$p_r$, $p_\theta$, $p_\phi$', r'$r$', r'$\theta$, $\phi$']
+						panels[1:3] = 2
+				if case.plot_traj[0] == 'dissociated' and xp.any(dissociated):
 					yc = yc[:, dissociated]
-				elif case.plot_traj == 'not_dissociated' and (not xp.all(dissociated)):
+				elif case.plot_traj[0] == 'not_dissociated' and (not xp.all(dissociated)):
 					yc = yc[:, xp.logical_not(dissociated)]
-				elif case.plot_traj != 'all':
+				elif case.plot_traj[0] != 'all':
 					print('\033[96m     Warning: All trajectories are being displayed \033[00m')   
-            	if case.dim == 2:
-                	x, y, px, py = xp.split(yc, 4, axis=1)
-                	axs[0].plot(t_eval, x, cs[2], label=r'$x$')
-                	axs[0].plot(t_eval, y, cs[3], label=r'$y$')
-                	axs[1].plot(t_eval, px, cs[2], label=r'$p_x$')
-                	axs[1].plot(t_eval, py, cs[3], label=r'$p_y$')
-                	axs[0].set_ylabel(r'$x$, $y$')
-                	axs[1].set_ylabel(r'$p_x$, $p_y$')
-            	elif case.dim == 3:
-                	x, y, z, px, py, pz = xp.split(yc, 6, axis=1)
-                	axs[0].plot(t_eval, x, cs[2], label=r'$x$')
-                	axs[0].plot(t_eval, y, cs[3], label=r'$y$')
-                	axs[0].plot(t_eval, z, cs[4], label=r'$z$')
-                	axs[1].plot(t_eval, px, cs[2], label=r'$p_x$')
-                	axs[1].plot(t_eval, py, cs[3], label=r'$p_y$')
-                	axs[1].plot(t_eval, pz, cs[4], label=r'$p_z$')
-                	axs[0].set_ylabel(r'$x$, $y$, $z$')
-                	axs[1].set_ylabel(r'$p_x$, $p_y$, $p_z$')
-            	for ax in axs:
+            	for k, coord in enumerate(xp.split(yc, 2 * case.dim, axis=1)):
+					if panels[k] == 2:
+						coord = coord % (2 * xp.pi)
+						axs[panels[k]].set_ylim((0, 2 * xp.pi))
+					axs[panels[k]].plot(t_eval, coord, colors[k], label=labels[k])
+            	for ylabel, ax in zip(ylabels, axs):
                 	ax.legend(loc='upper right', labelcolor='linecolor')
+					ax.set_ylabel(ylabel)
             	plt.show()
 
 def save_data(case, data, filestr, info=[]):

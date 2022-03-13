@@ -71,10 +71,10 @@ class DiaMol:
 		r = sp.Symbol('r')
 		eps = De * (1 - sp.exp(-gam * (r - re)))**2 - De
 		d_eps = sp.diff(eps, r)
-		self.eps = sp.lambdify(r, eps)
-		self.d_eps = sp.lambdify(r, d_eps)
+		self.eps = sp.lambdify(r, sp.simplify(eps))
+		self.d_eps = sp.lambdify(r, sp.simplify(d_eps))
 		poly = lambda r, a: sum(c * r**k for k, c in enumerate(a))
-		deriv = lambda fun: sp.lambdify(r, sp.diff(fun, r))
+		deriv = lambda fun: sp.lambdify(r, sp.simplify(sp.diff(fun, r)))
 		para_s, perp_s = poly(r - re, a_s), poly(r - re, b_s)
 		para_m, perp_m = poly(r, a_m), poly(r, b_m)
 		para_l = (al_Cl2 + 4 * al_Cl**2 / r**3) / (1 - 4 * al_Cl**2 / r**6)
@@ -82,9 +82,9 @@ class DiaMol:
 		d_para_s, d_perp_s = deriv(para_s), deriv(perp_s)
 		d_para_m, d_perp_m = deriv(para_m), deriv(perp_m)
 		d_para_l, d_perp_l = deriv(para_l), deriv(perp_l)
-		para_s, perp_s = sp.lambdify(r, para_s), sp.lambdify(r, perp_s)
-		para_m, perp_m = sp.lambdify(r, para_m), sp.lambdify(r, perp_m)
-		para_l, perp_l = sp.lambdify(r, para_l), sp.lambdify(r, perp_l)
+		para_s, perp_s = sp.lambdify(r, sp.simplify(para_s)), sp.lambdify(r, sp.simplify(perp_s))
+		para_m, perp_m = sp.lambdify(r, sp.simplify(para_m)), sp.lambdify(r, sp.simplify(perp_m))
+		para_l, perp_l = sp.lambdify(r, sp.simplify(para_l)), sp.lambdify(r, sp.simplify(perp_l))
 		self.al_para = lambda r: xp.where(r<=r_a[0], para_s(r), xp.where(r<=r_a[1], para_m(r), para_l(r)))
 		self.al_perp = lambda r: xp.where(r<=r_b[0], perp_s(r), xp.where(r<=r_b[1], perp_m(r), perp_l(r)))
 		d_al_para = lambda r: xp.where(r<=r_a[0], d_para_s(r), xp.where(r<=r_a[1], d_para_m(r), d_para_l(r)))
@@ -93,7 +93,7 @@ class DiaMol:
 		self.d_Dal = lambda r: d_al_para(r) - self.d_al_perp(r)
 		self.ZVS = lambda r, theta, phi, t: -self.mu * self.Omega(t)**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
 		if -De < self.Energy0 < 0:
-			self.rH0 = [re - xp.log(1 + xp.sqrt(1 + self.Energy0 / De)) / gam, re - xp.log(1 - xp.sqrt(1 + self.Energy0 / De)) / gam]
+			self.rH0 = xp.asarray([re - xp.log(1 + xp.sqrt(1 + self.Energy0 / De)) / gam, re - xp.log(1 - xp.sqrt(1 + self.Energy0 / De)) / gam])
 		else:
 			self.rH0 = []
 
@@ -137,23 +137,23 @@ class DiaMol:
 
 	def initcond(self, N):
 		if self.rH0:
-			r0 = [max(self.r[0], self.rH0[0]), min(self.r[1], self.rH0[1])]
-			r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
-			theta = xp.pi * xp.random.random((2, N))
-			phi = 2 * xp.pi * xp.random.random((2, N))
-			P = xp.sqrt(2 * self.mu * (self.Energy0 - self.eps(r)))
-			if self.dim == 2:
-				pr = P * xp.cos(phi[1])
-				pphi = P * xp.sin(phi[1]) * r
-				return xp.concatenate((r, phi[0], pr, pphi), axis=None)
-			elif self.dim == 3:
-				pr = P * xp.cos(phi[1]) * xp.sin(theta[1])
-				ptheta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
-				pphi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
-				return xp.concatenate((r, theta[0], phi[0], pr, ptheta, pphi), axis=None)
-		else:
-			print('\033[33m          Warning: Empty energy surface (H0>=0 or H0<=-De) \033[00m')
-			return []
+			if (xp.min(self.r) > xp.max(self.rH0)) and (xp.min(self.rH0) > xp.max(self.r)):
+				r0 = [max(self.r[0], self.rH0[0]), min(self.r[1], self.rH0[1])]
+				r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
+				theta = xp.pi * xp.random.random((2, N))
+				phi = 2 * xp.pi * xp.random.random((2, N))
+				P = xp.sqrt(2 * self.mu * (self.Energy0 - self.eps(r)))
+				if self.dim == 2:
+					pr = P * xp.cos(phi[1])
+					pphi = P * xp.sin(phi[1]) * r
+					return xp.concatenate((r, phi[0], pr, pphi), axis=None)
+				elif self.dim == 3:
+					pr = P * xp.cos(phi[1]) * xp.sin(theta[1])
+					ptheta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
+					pphi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
+					return xp.concatenate((r, theta[0], phi[0], pr, ptheta, pphi), axis=None)
+		print('\033[33m          Warning: Empty energy surface \033[00m')
+		return []
 
 	def check_dissociation(self, y):
 		if self.dim == 2:

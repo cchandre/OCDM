@@ -18,7 +18,7 @@ Energy0 = -0.001
 
 Ntraj = 2
 Tol = 1e-5
-plot_traj = 'all'
+plot_traj = ['all', 'cartesian']
 
 SaveData = False
 PlotResults = False
@@ -33,7 +33,7 @@ darkmode = True
 dict_list = [{'Method': Method} for _ in xp.atleast_1d(E0)]
 for _, E in enumerate(xp.atleast_1d(E0)):
     dict_list[_].update({
-        'r': r,
+        'r': xp.asarray(r),
         'dim': dimension,
         'E0': E,
         'envelope': envelope,
