@@ -16,9 +16,9 @@ te = [15, 30, 15]
 
 Energy0 = -0.0001
 
-Ntraj = 2
+Ntraj = 10
 Tol = 1e-5
-plot_traj = ['all', 'spherical']
+plot_traj = ['dissociated', 'spherical']
 
 SaveData = False
 PlotResults = True

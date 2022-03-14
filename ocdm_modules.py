@@ -111,12 +111,8 @@ def run_method(case):
                         ax.axvline(x=t, lw=1, color=cs[1])
                     ax.set_xlim((t_eval[0], t_eval[-1]))
                     ax.set_xlabel(r'$t$')
-                if case.dim == 2:
-                    panels = [1, 1, 0, 0]
-                    colors = [cs[2], cs[3], cs[2], cs[3]]
-                elif case.dim == 3:
-                    panels = [1, 1, 1, 0, 0, 0]
-                    colors = [cs[2], cs[3], cs[4], cs[2], cs[3], cs[4]]
+                panels = xp.asarray((1,) * case.dim + (0,) * case.dim)
+                colors = xp.tile(cs[2:2+case.dim], 2)
                 if case.plot_traj[1] == 'cartesian':
                     yc = case.pol2cart(sol.y).transpose()
                     if case.dim == 2:
@@ -136,9 +132,9 @@ def run_method(case):
                         ylabels = [r'$p_r$, $p_\theta$, $p_\phi$', r'$r$', r'$\theta$, $\phi$']
                         panels[1:3] = 2
                 if case.plot_traj[0] == 'dissociated' and xp.any(dissociated):
-                    yc = yc[:, dissociated]
+                    yc = yc[:, xp.tile(dissociated, 2 * case.dim)]
                 elif case.plot_traj[0] == 'not_dissociated' and (not xp.all(dissociated)):
-                    yc = yc[:, xp.logical_not(dissociated)]
+                    yc = yc[:, xp.logical_not(xp.tile(dissociated, 2 * case.dim))]
                 elif case.plot_traj[0] != 'all':
                     print('\033[33m          Warning: All trajectories are being displayed \033[00m')
                 for k, coord in enumerate(xp.split(yc, 2 * case.dim, axis=1)):

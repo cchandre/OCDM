@@ -144,24 +144,24 @@ class DiaMol:
 				phi = 2 * xp.pi * xp.random.random((2, N))
 				P = xp.sqrt(2 * self.mu * (self.Energy0 - self.eps(r)))
 				if self.dim == 2:
-					pr = P * xp.cos(phi[1])
-					pphi = P * xp.sin(phi[1]) * r
-					return xp.concatenate((r, phi[0], pr, pphi), axis=None)
+					p_r = P * xp.cos(phi[1])
+					p_phi = P * xp.sin(phi[1]) * r
+					return xp.concatenate((r, phi[0], p_r, p_phi), axis=None)
 				elif self.dim == 3:
-					pr = P * xp.cos(phi[1]) * xp.sin(theta[1])
-					ptheta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
-					pphi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
-					return xp.concatenate((r, theta[0], phi[0], pr, ptheta, pphi), axis=None)
+					p_r = P * xp.cos(phi[1]) * xp.sin(theta[1])
+					p_theta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
+					p_phi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
+					return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
 		print('\033[33m          Warning: Empty energy surface \033[00m')
 		return []
 
 	def check_dissociation(self, y):
 		if self.dim == 2:
-			r, phi, pr, pphi = xp.split(y, 4)
-			H = (pr**2 + pphi**2 / r**2) / (2 * self.mu) + self.eps(r)
+			r, phi, p_r, p_phi = xp.split(y, 4)
+			H = (p_r**2 + p_phi**2 / r**2) / (2 * self.mu) + self.eps(r)
 		elif self.dim == 3:
-			r, theta, phi, pr, ptheta, pphi = xp.split(y, 6)
-			H = (pr**2 + ptheta**2 / r**2 + pphi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r)
+			r, theta, phi, p_r, p_theta, p_phi = xp.split(y, 6)
+			H = (p_r**2 + p_theta**2 / r**2 + p_phi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r)
 		return (H > 0)
 
 	def cart2pol(self, y):
