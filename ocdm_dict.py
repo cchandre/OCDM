@@ -17,7 +17,7 @@ te = [15, 50, 15]
 Energy0 = -0.001
 
 Ntraj = 500
-Tol = 1e-5
+Tol = [1e-5, 1e-3]
 plot_traj = ['dissociated', 'spherical']
 
 SaveData = False

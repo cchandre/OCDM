@@ -84,7 +84,7 @@ def run_method(case):
             t_eval = [t_eval[0], t_eval[-1]]
         if xp.any(y0):
             start = time.time()
-            sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, t_eval=t_eval, atol=case.Tol, rtol=case.Tol)
+            sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, t_eval=t_eval, atol=case.Tol[0], rtol=case.Tol[1])
             print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
             dissociated = case.check_dissociation(sol.y[:, -1])
             if case.SaveData:
