@@ -21,13 +21,13 @@ ___
 
 - *Method*: string; 'plot_potentials', 'plot_ZVS', 'dissociation', 'trajectories'
 ####
-- *r*: array of two floats; minimum and maximum values of *r* for the display of the potentials and selection of initial conditions
+- *r*: array of two floats; minimum and maximum values of *r* for the display of the potentials, and range of $r$ for the selection of initial conditions (atomic units)
 - *dimension*: 2 or 3; dimension of the computation
-- *E0*: float or array of floats; amplitude(s) of the electric field used in the computation
-- *Omega*: lambda function; values of the frequency of rotation of the polarisation axis as a function of time
+- *E0*: float or array of floats; amplitude(s) of the electric field considered in the computation (atomic units)
+- *Omega*: lambda function; values of the frequency of rotation of the polarisation axis as a function of time (atomic units)
 - *envelope*: string ('const', 'sinus', 'trapez'); envelope function of the laser field
 - *te*: array of 3 floats; duration of ramp-up, plateau and ramp-down (in picoseconds)
-- *Energy0*: float (negative); value of the initial energy
+- *Energy0*: float (negative); value of the initial energy (atomic units)
 - *Ntraj*: integer; number of trajectories to be integrated
 - *Tol*: float; tolerance of the numerical integration 
 - *plot_traj*: array of two strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical'] for the type of trajectories to be plotted
