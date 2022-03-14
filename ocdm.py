@@ -36,7 +36,7 @@ def run_case(dict):
 	run_method(case)
 
 def main():
-	print('\033[92m  Optical Centrifuge for Diatomic Molecules  \033[00m')
+	print('\033[92m  Optical Centrifuge for Diatomic Molecules (here: Cl2)  \033[00m')
 	if Parallelization[0]:
 		if Parallelization[1] == 'all':
 			num_cores = multiprocessing.cpu_count()
@@ -100,30 +100,30 @@ class DiaMol:
 	def eqn_H(self, t, y):
 		Eeff = self.E0**2 * self.env(t)**2 / 4
 		if self.dim == 2:
-			r, phi, pr, pphi = xp.split(y, 4)
-			dr = pr / self.mu
-			dphi = pphi / (self.mu * r**2) - self.Omega(t)
-			dpr = pphi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
-			dpphi = -Eeff * self.Dal(r) * xp.sin(2 * phi)
-			return xp.concatenate((dr, dphi, dpr, dpphi), axis=None)
+			r, phi, p_r, p_phi = xp.split(y, 4)
+			dr = p_r / self.mu
+			dphi = p_phi / (self.mu * r**2) - self.Omega(t)
+			dp_r = p_phi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
+			dp_phi = -Eeff * self.Dal(r) * xp.sin(2 * phi)
+			return xp.concatenate((dr, dphi, dp_r, dp_phi), axis=None)
 		elif self.dim == 3:
-			r, theta, phi, pr, ptheta, pphi = xp.split(y, 6)
-			dr = pr / self.mu
-			dtheta = ptheta / (self.mu * r**2)
-			dphi = pphi / (self.mu * r**2 * xp.sin(theta)**2) - self.Omega(t)
-			dpr = ptheta**2 / (self.mu * r**3) + pphi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r))
-			dptheta = pphi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2
-			dpphi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
-			return xp.concatenate((dr, dtheta, dphi, dpr, dptheta, dpphi), axis=None)
+			r, theta, phi, p_r, p_theta, p_phi = xp.split(y, 6)
+			dr = p_r / self.mu
+			dtheta = p_theta / (self.mu * r**2)
+			dphi = p_phi / (self.mu * r**2 * xp.sin(theta)**2) - self.Omega(t)
+			dp_r = p_theta**2 / (self.mu * r**3) + p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r))
+			dp_theta = p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2
+			dp_phi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
+			return xp.concatenate((dr, dtheta, dphi, dp_r, dp_theta, dp_phi), axis=None)
 
 	def energy(self, t, y):
 		Eeff = self.E0**2 * self.env(t)**2 / 4
 		if self.dim == 2:
-			r, phi, pr, pphi = xp.split(y, 4)
-			H = (pr**2 + pphi**2 / r**2) / (2 * self.mu) + self.eps(r) - self.Omega(t) * pphi - Eeff * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
+			r, phi, p_r, p_phi = xp.split(y, 4)
+			H = (p_r**2 + p_phi**2 / r**2) / (2 * self.mu) + self.eps(r) - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
 		elif self.dim == 3:
-			r, theta, phi, pr, ptheta, pphi = xp.split(y, 6)
-			H = (pr**2 + ptheta**2 / r**2 + pphi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r) - self.Omega(t) * pphi - Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
+			r, theta, phi, p_r, p_theta, p_phi = xp.split(y, 6)
+			H = (p_r**2 + p_theta**2 / r**2 + p_phi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r) - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
 		return H
 
 	def env(self, t):
