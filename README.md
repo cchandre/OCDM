@@ -37,7 +37,7 @@ ___
 - *Parallelization*: tuple (boolean, int); True for parallelization, int is the number of cores to be used or int='all' to use all available cores
 - *darkmode*: boolean; if True, plots are done in dark mode
 ####
-These options may be changed in [`ocdm_dict.py`](https://github.com/cchandre/OCDM/blob/main/ocdm_dict.py) (see <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html" target="_blank">'solve_ivp'</a>):
+These options may be changed in [`ocdm_dict.py`](https://github.com/cchandre/OCDM/blob/main/ocdm_dict.py) (see <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html" target="_blank">solve_ivp</a>):
 - *ode_solver*: integration method to use (default='RK45')
 - *Tol*: absolute and relative tolerances (default=[1e-6, 1e-3])
 
