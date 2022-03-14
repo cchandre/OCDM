@@ -29,7 +29,6 @@ ___
 - *te*: array of 3 floats; duration of ramp-up, plateau and ramp-down (in picoseconds)
 - *Energy0*: float (negative); value of the initial energy (atomic units)
 - *Ntraj*: integer; number of trajectories to be integrated
-- *Tol*: array of 2 floats; [AbsTol, RelTol]; absolute and relative tolerances of the numerical integration 
 - *plot_traj*: array of two strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical'] for the type of trajectories to be plotted
 ####
 - *SaveData*: boolean; if True, the results are saved in a `.mat` file; NB: the dissociation probabilities are saved in a `.txt` file regardless of the value of SaveData
