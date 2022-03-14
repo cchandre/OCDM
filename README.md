@@ -36,6 +36,10 @@ ___
 - *PlotResults*: boolean; if True, the results (for 'plot_potentials', 'plot_ZVS' and 'trajectories') are plotted right after the computation
 - *Parallelization*: tuple (boolean, int); True for parallelization, int is the number of cores to be used or int='all' to use all available cores
 - *darkmode*: boolean; if True, plots are done in dark mode
+####
+These options may be changed in [`ocdm_dict.py`](https://github.com/cchandre/OCDM/blob/main/ocdm_dict.py) (see ['solve_ivp'](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html)):
+- *ode_solver*: integration method to use (default='RK45')
+- *Tol*: absolute and relative tolerances (default=[1e-6, 1e-3])
 
 ---
 For more information: <cristel.chandre@cnrs.fr>
