@@ -136,7 +136,7 @@ class DiaMol:
 			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te[2], 0))))
 
 	def initcond(self, N):
-		if self.rH0:
+		if xp.any(self.rH0):
 			if (self.r[1] > self.rH0[0]) and (self.rH0[1] > self.r[0]):
 				r0 = [max(self.r[0], self.rH0[0]), min(self.r[1], self.rH0[1])]
 				r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]

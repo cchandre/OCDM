@@ -12,16 +12,16 @@ dimension = 2
 E0 = 5e-1
 Omega = lambda t: 2e-5
 envelope = 'sinus'
-te = [15, 70, 15]
+te = [15, 30, 15]
 
-Energy0 = -0.001
+Energy0 = -0.0001
 
 Ntraj = 2
 Tol = 1e-5
-plot_traj = ['all', 'cartesian']
+plot_traj = ['all', 'spherical']
 
 SaveData = False
-PlotResults = False
+PlotResults = True
 Parallelization = (False, 3)
 
 dpi = 1000
