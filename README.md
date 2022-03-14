@@ -32,8 +32,8 @@ ___
 - *Tol*: float; tolerance of the numerical integration 
 - *plot_traj*: array of two strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical'] for the type of trajectories to be plotted
 ####
-- *SaveData*: boolean; if True, the results are saved in a `.mat` file
-- *PlotResults*: boolean; if True, the results are plotted right after the computation
+- *SaveData*: boolean; if True, the results are saved in a `.mat` file; NB: the dissociation probabilities are saved in a `.txt` file regardless of the value of SaveData
+- *PlotResults*: boolean; if True, the results (for 'plot_potentials', 'plot_ZVS' and 'trajectories') are plotted right after the computation
 - *Parallelization*: tuple (boolean, int); True for parallelization, int is the number of cores to be used or int='all' to use all available cores
 - *dpi*: integer; dpi value for the figures
 - *darkmode*: boolean; if True, plots are done in dark mode
