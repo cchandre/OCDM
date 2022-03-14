@@ -97,8 +97,8 @@ def run_method(case):
                 file = open(type(case).__name__ + '_' + case.Method + '.txt', 'a')
                 if os.path.getsize(file.name) == 0:
                     file.writelines('%   E0           proba \n')
-                    file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
-                    file.close()
+                file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
+                file.close()
             elif case.Method == 'trajectories' and case.PlotResults:
                 fig = plt.figure(figsize=(8, 10))
                 if case.plot_traj[1] == 'cartesian':

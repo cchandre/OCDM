@@ -9,14 +9,14 @@ r = [2.5, 15]
 
 dimension = 2
 
-E0 = xp.linspace(0, 5e-1, 100)
+E0 = xp.linspace(0, 1e-1, 150)
 Omega = lambda t: 2e-5
 envelope = 'sinus'
 te = [15, 50, 15]
 
 Energy0 = -0.001
 
-Ntraj = 100
+Ntraj = 500
 Tol = 1e-5
 plot_traj = ['dissociated', 'spherical']
 
