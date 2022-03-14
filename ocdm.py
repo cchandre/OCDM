@@ -71,10 +71,10 @@ class DiaMol:
 		r = sp.Symbol('r')
 		eps = De * (1 - sp.exp(-gam * (r - re)))**2 - De
 		d_eps = sp.diff(eps, r)
-		self.eps = sp.lambdify(r, sp.simplify(eps))
-		self.d_eps = sp.lambdify(r, sp.simplify(d_eps))
+		self.eps = sp.lambdify(r, eps)
+		self.d_eps = sp.lambdify(r, d_eps)
 		poly = lambda r, a: sum(c * r**k for k, c in enumerate(a))
-		deriv = lambda fun: sp.lambdify(r, sp.simplify(sp.diff(fun, r)))
+		deriv = lambda fun: sp.lambdify(r, sp.diff(fun, r))
 		para_s, perp_s = poly(r - re, a_s), poly(r - re, b_s)
 		para_m, perp_m = poly(r, a_m), poly(r, b_m)
 		para_l = (al_Cl2 + 4 * al_Cl**2 / r**3) / (1 - 4 * al_Cl**2 / r**6)
@@ -82,9 +82,9 @@ class DiaMol:
 		d_para_s, d_perp_s = deriv(para_s), deriv(perp_s)
 		d_para_m, d_perp_m = deriv(para_m), deriv(perp_m)
 		d_para_l, d_perp_l = deriv(para_l), deriv(perp_l)
-		para_s, perp_s = sp.lambdify(r, sp.simplify(para_s)), sp.lambdify(r, sp.simplify(perp_s))
-		para_m, perp_m = sp.lambdify(r, sp.simplify(para_m)), sp.lambdify(r, sp.simplify(perp_m))
-		para_l, perp_l = sp.lambdify(r, sp.simplify(para_l)), sp.lambdify(r, sp.simplify(perp_l))
+		para_s, perp_s = sp.lambdify(r, para_s), sp.lambdify(r, perp_s)
+		para_m, perp_m = sp.lambdify(r, para_m), sp.lambdify(r, perp_m)
+		para_l, perp_l = sp.lambdify(r, para_l), sp.lambdify(r, perp_l)
 		self.al_para = lambda r: xp.where(r<=r_a[0], para_s(r), xp.where(r<=r_a[1], para_m(r), para_l(r)))
 		self.al_perp = lambda r: xp.where(r<=r_b[0], perp_s(r), xp.where(r<=r_b[1], perp_m(r), perp_l(r)))
 		d_al_para = lambda r: xp.where(r<=r_a[0], d_para_s(r), xp.where(r<=r_a[1], d_para_m(r), d_para_l(r)))
@@ -93,7 +93,7 @@ class DiaMol:
 		self.d_Dal = lambda r: d_al_para(r) - self.d_al_perp(r)
 		self.ZVS = lambda r, theta, phi, t: -self.mu * self.Omega(t)**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
 		if -De < self.Energy0 < 0:
-			self.rH0 = xp.asarray([re - xp.log(1 + xp.sqrt(1 + self.Energy0 / De)) / gam, re - xp.log(1 - xp.sqrt(1 + self.Energy0 / De)) / gam])
+			self.rH0 = [re - xp.log(1 + xp.sqrt(1 + self.Energy0 / De)) / gam, re - xp.log(1 - xp.sqrt(1 + self.Energy0 / De)) / gam]
 		else:
 			self.rH0 = []
 
@@ -111,7 +111,7 @@ class DiaMol:
 			dr = pr / self.mu
 			dtheta = ptheta / (self.mu * r**2)
 			dphi = pphi / (self.mu * r**2 * xp.sin(theta)**2) - self.Omega(t)
-			dpr = ptheta**2 / (self.mu * r**3) + pphi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
+			dpr = ptheta**2 / (self.mu * r**3) + pphi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r))
 			dptheta = pphi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2
 			dpphi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
 			return xp.concatenate((dr, dtheta, dphi, dpr, dptheta, dpphi), axis=None)
@@ -168,31 +168,31 @@ class DiaMol:
 		if self.dim == 2:
 			x, y, px, py = xp.split(y, 4)
 			r, phi = xp.hypot(x, y), xp.arctan2(y, x)
-			pr = (x * px + y * py) / r
-			pphi = x * py - y * px
-			return xp.concatenate((r, phi, pr, pphi))
+			p_r = (x * px + y * py) / r
+			p_phi = x * py - y * px
+			return xp.concatenate((r, phi, p_r, p_phi))
 		elif self.dim == 3:
 			x, y, z, px, py, pz = xp.split(y, 6)
 			xy, phi = xp.hypot(x, y), xp.arctan2(y, x)
 			r, theta = xp.hypot(xy, z), xp.arctan2(z, hxy)
-			pr = (x * px + y * py + z * pz) / r
-			ptheta = ((x * px + y * py) * z - pz * xy**2) / xy
-			pphi = x * py - y * px
-			return xp.concatenate((r, theta, phi, pr, ptheta, pphi))
+			p_r = (x * px + y * py + z * pz) / r
+			p_theta = ((x * px + y * py) * z - pz * xy**2) / xy
+			p_phi = x * py - y * px
+			return xp.concatenate((r, theta, phi, p_r, p_theta, p_phi))
 
 	def pol2cart(self, y):
 		if self.dim == 2:
-			r, phi, pr, pphi = xp.split(y, 4)
+			r, phi, p_r, p_phi = xp.split(y, 4)
 			x, y = r * xp.cos(phi), r * xp.sin(phi)
-			px = pr * xp.cos(phi) - pphi * xp.sin(phi) / r
-			py = pr * xp.sin(phi) + pphi * xp.cos(phi) / r
+			px = p_r * xp.cos(phi) - p_phi * xp.sin(phi) / r
+			py = p_r * xp.sin(phi) + p_phi * xp.cos(phi) / r
 			return xp.concatenate((x, y, px, py))
 		elif self.dim == 3:
-			r, theta, phi, pr, ptheta, pphi = xp.split(y, 6)
+			r, theta, phi, p_r, p_theta, p_phi = xp.split(y, 6)
 			x, y, z = r * xp.sin(theta) * xp.cos(phi), r * xp.sin(theta) * xp.sin(phi), r * xp.cos(theta)
-			px = pr * xp.sin(theta) * xp.cos(phi) + ptheta * xp.cos(theta) * xp.cos(phi) / r - pphi * xp.sin(phi) / (r * xp.sin(theta))
-			py = pr * xp.sin(theta) * xp.sin(phi) + ptheta * xp.cos(theta) * xp.sin(phi) / r + pphi * xp.cos(phi) / (r * xp.sin(theta))
-			pz = pr * xp.cos(theta) - ptheta * xp.sin(theta) / r
+			px = p_r * xp.sin(theta) * xp.cos(phi) + p_theta * xp.cos(theta) * xp.cos(phi) / r - p_phi * xp.sin(phi) / (r * xp.sin(theta))
+			py = p_r * xp.sin(theta) * xp.sin(phi) + p_theta * xp.cos(theta) * xp.sin(phi) / r + p_phi * xp.cos(phi) / (r * xp.sin(theta))
+			pz = p_r * xp.cos(theta) - p_theta * xp.sin(theta) / r
 			return xp.concatenate((x, y, z, px, py, pz))
 
 if __name__ == "__main__":

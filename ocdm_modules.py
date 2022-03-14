@@ -83,7 +83,9 @@ def run_method(case):
         if case.Method == 'dissociation':
             t_eval = [t_eval[0], t_eval[-1]]
         if xp.any(y0):
+            start = time.time()
             sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, t_eval=t_eval, atol=case.Tol, rtol=case.Tol)
+            print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
             dissociated = case.check_dissociation(sol.y[:, -1])
             if case.SaveData:
                 save_data(case, sol.y, filestr)
@@ -138,7 +140,7 @@ def run_method(case):
                 elif case.plot_traj[0] == 'not_dissociated' and (not xp.all(dissociated)):
                     yc = yc[:, xp.logical_not(dissociated)]
                 elif case.plot_traj[0] != 'all':
-                    print('\033[96m     Warning: All trajectories are being displayed \033[00m')
+                    print('\033[33m          Warning: All trajectories are being displayed \033[00m')
                 for k, coord in enumerate(xp.split(yc, 2 * case.dim, axis=1)):
                     if panels[k] == 2:
                         coord = coord % (2 * xp.pi)

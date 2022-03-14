@@ -31,9 +31,9 @@ darkmode = True
 ##                             DO NOT EDIT BELOW                                                 ##
 ###################################################################################################
 dict_list = [{'Method': Method} for _ in xp.atleast_1d(E0)]
-for _, E in enumerate(xp.atleast_1d(E0)):
-    dict_list[_].update({
-        'r': xp.asarray(r),
+for dict, E in zip(dict_list, xp.atleast_1d(E0)):
+    dict.update({
+        'r': r,
         'dim': dimension,
         'E0': E,
         'envelope': envelope,
