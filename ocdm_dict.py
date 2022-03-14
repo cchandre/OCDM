@@ -4,27 +4,27 @@
 
 import numpy as xp
 
-Method = 'trajectories'
+Method = 'dissociation'
 r = [2.5, 15]
 
 dimension = 2
 
-E0 = 5e-1
+E0 = xp.linspace(0, 5e-1, 100)
 Omega = lambda t: 2e-5
 envelope = 'sinus'
-te = [15, 30, 15]
+te = [15, 50, 15]
 
-Energy0 = -0.0001
+Energy0 = -0.001
 
-Ntraj = 10
+Ntraj = 100
 Tol = 1e-5
 plot_traj = ['dissociated', 'spherical']
 
 SaveData = False
-PlotResults = True
-Parallelization = (False, 3)
+PlotResults = False
+Parallelization = (True, 3)
 
-dpi = 1000
+dpi = 300
 darkmode = True
 
 ###################################################################################################
@@ -45,5 +45,6 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'SaveData': SaveData,
         'PlotResults': PlotResults,
         'dpi': dpi,
+        'contour_levels': 50,
         'darkmode': darkmode})
 ###################################################################################################

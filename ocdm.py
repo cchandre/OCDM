@@ -164,7 +164,7 @@ class DiaMol:
 			H = (p_r**2 + p_theta**2 / r**2 + p_phi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r)
 		return (H > 0)
 
-	def cart2pol(self, y):
+	def cart2sph(self, y):
 		if self.dim == 2:
 			x, y, px, py = xp.split(y, 4)
 			r, phi = xp.hypot(x, y), xp.arctan2(y, x)
@@ -174,13 +174,13 @@ class DiaMol:
 		elif self.dim == 3:
 			x, y, z, px, py, pz = xp.split(y, 6)
 			xy, phi = xp.hypot(x, y), xp.arctan2(y, x)
-			r, theta = xp.hypot(xy, z), xp.arctan2(z, hxy)
+			r, theta = xp.hypot(xy, z), xp.arctan2(hxy, z)
 			p_r = (x * px + y * py + z * pz) / r
 			p_theta = ((x * px + y * py) * z - pz * xy**2) / xy
 			p_phi = x * py - y * px
 			return xp.concatenate((r, theta, phi, p_r, p_theta, p_phi))
 
-	def pol2cart(self, y):
+	def sph2cart(self, y):
 		if self.dim == 2:
 			r, phi, p_r, p_phi = xp.split(y, 4)
 			x, y = r * xp.cos(phi), r * xp.sin(phi)

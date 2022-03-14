@@ -67,9 +67,9 @@ def run_method(case):
         phi = xp.linspace(0, 2*xp.pi, case.dpi)
         Phi, R = xp.meshgrid(phi, r)
         ZVS = case.ZVS(R, xp.pi/2, Phi, 0)
-        plt.contourf(Phi, R, ZVS, 50, cmap=plt.cm.hot)
+        plt.contourf(Phi, R, ZVS, case.contour_levels, cmap=plt.cm.hot)
         plt.colorbar()
-        plt.contour(Phi, R, ZVS, 50, linewidths=1, colors='k', linestyles='solid')
+        plt.contour(Phi, R, ZVS, case.contour_levels, linewidths=1, colors='k', linestyles='solid')
         ax.set_xlabel(r'$\phi$')
         ax.set_ylabel(r'$r$')
         ax.set_title(r'Zero-Velocity Surface')
@@ -114,7 +114,7 @@ def run_method(case):
                 panels = xp.asarray((1,) * case.dim + (0,) * case.dim)
                 colors = xp.tile(cs[2:2+case.dim], 2)
                 if case.plot_traj[1] == 'cartesian':
-                    yc = case.pol2cart(sol.y).transpose()
+                    yc = case.sph2cart(sol.y).transpose()
                     if case.dim == 2:
                         labels = [r'$x$', r'$y$', r'$p_x$', r'$p_y$']
                         ylabels = [r'$p_x$, $p_y$', r'$x$, $y$']
