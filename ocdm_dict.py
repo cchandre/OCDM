@@ -8,7 +8,7 @@ Method = 'dissociation'
 
 dimension = 2
 
-E0 = 1e-1
+E0 = xp.linspace(0, 1e-1, 150)
 Omega = lambda t: 2e-5
 envelope = 'sinus'
 te = [15, 50, 15]

@@ -176,7 +176,7 @@ class DiaMol:
 		elif self.dim == 3:
 			x, y, z, px, py, pz = xp.split(y_, 6)
 			xy, phi = xp.hypot(x, y), xp.arctan2(y, x)
-			r, theta = xp.hypot(xy, z), xp.arctan2(hxy, z)
+			r, theta = xp.hypot(xy, z), xp.arctan2(xy, z)
 			p_r = (x * px + y * py + z * pz) / r
 			p_theta = ((x * px + y * py) * z - pz * xy**2) / xy
 			p_phi = x * py - y * px
