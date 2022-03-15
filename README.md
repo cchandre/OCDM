@@ -32,8 +32,8 @@ ___
 - *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical', 'lab' or 'rotated'] for the type of trajectories to be plotted and/or saved
 - *dpi*: integer; dpi value for the figures 
 ####
-- *SaveData*: boolean; if True, the results are saved in a `.mat` file; NB: the dissociation probabilities are saved in a `.txt` file regardless of the value of SaveData
-- *PlotResults*: boolean; if True, the results (for 'plot_potentials', 'plot_ZVS' and 'trajectories') are plotted right after the computation
+- *SaveData*: boolean; if True, the results are saved in a `.mat` file (with the type specified in 'type_traj' for 'trajectories'); NB: the dissociation probabilities are saved in a `.txt` file regardless of the value of SaveData
+- *PlotResults*: boolean; if True, the results (for 'plot_potentials', 'plot_ZVS' and 'trajectories') are plotted right after the computation (with the type specified in 'type_traj' for 'trajectories')
 - *Parallelization*: tuple (boolean, int); True for parallelization, int is the number of cores to be used or int='all' to use all available cores
 - *darkmode*: boolean; if True, plots are done in dark mode
 ####
