@@ -90,8 +90,20 @@ def run_method(case):
             sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, method=case.ode_solver, t_eval=t_eval, atol=case.Tol[0], rtol=case.Tol[1])
             print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
             dissociated = case.check_dissociation(sol.y[:, -1])
+            if case.type_traj[1] == 'cartesian':
+                yc = case.sph2cart(sol.y)
+            elif case.type_traj[1] == 'spherical':
+                yc = case.mod(sol.y)
+            if case.type_traj[2] == 'lab':
+                yc = case.rotating(yc, -case.Phi(t_eval), type=case.type_traj[1])
+            if case.type_traj[0] == 'dissociated' and xp.any(dissociated):
+                yc = yc[xp.tile(dissociated, 2 * case.dim), :]
+            elif case.type_traj[0] == 'not_dissociated' and (not xp.all(dissociated)):
+                yc = yc[xp.logical_not(xp.tile(dissociated, 2 * case.dim)), :]
+            elif case.type_traj[0] != 'all' and (case.PlotResults or case.SaveData):
+                print('\033[33m          Warning: All trajectories are being displayed and/or saved \033[00m')
             if case.SaveData:
-                save_data(case, sol.y, filestr)
+                save_data(case, yc, filestr)
                 print('\033[90m        Data saved in {}.mat \033[00m'.format(filestr))
             if case.Method == 'dissociation':
                 proba = dissociated.sum() / case.Ntraj
@@ -104,9 +116,9 @@ def run_method(case):
                 file.close()
             elif case.Method == 'trajectories' and case.PlotResults:
                 fig = plt.figure(figsize=(8, 10))
-                if case.plot_traj[1] == 'cartesian':
+                if case.type_traj[1] == 'cartesian':
                     axs = fig.add_gridspec(2, hspace=0.2).subplots(sharex=True)
-                elif case.plot_traj[1] == 'spherical':
+                elif case.type_traj[1] == 'spherical':
                     axs = fig.add_gridspec(3, hspace=0.2).subplots(sharex=True)
                 te = xp.cumsum(case.te)
                 for ax in axs:
@@ -116,16 +128,14 @@ def run_method(case):
                     ax.set_xlabel(r'$t$')
                 panels = xp.asarray((1,) * case.dim + (0,) * case.dim)
                 colors = xp.tile(cs[2:2+case.dim], 2)
-                if case.plot_traj[1] == 'cartesian':
-                    yc = case.sph2cart(sol.y)
+                if case.type_traj[1] == 'cartesian':
                     if case.dim == 2:
                         labels = [r'$x$', r'$y$', r'$p_x$', r'$p_y$']
                         ylabels = [r'$p_x$, $p_y$', r'$x$, $y$']
                     elif case.dim == 3:
                         labels = [r'$x$', r'$y$', r'$z$', r'$p_x$', r'$p_y$', r'$p_z$']
                         ylabels = [r'$p_x$, $p_y$, $p_z$', r'$x$, $y$, $z$']
-                elif case.plot_traj[1] == 'spherical':
-                    yc = sol.y.copy()
+                elif case.type_traj[1] == 'spherical':
                     if case.dim == 2:
                         labels = [r'$r$', r'$\phi$', r'$p_r$', r'$p_\phi$']
                         ylabels = [r'$p_r$, $p_\phi$', r'$r$', r'$\phi$']
@@ -134,23 +144,16 @@ def run_method(case):
                         labels = [r'$r$', r'$\theta$', r'$\phi$', r'$p_r$', r'$p_\theta$', r'$p_\phi$']
                         ylabels = [r'$p_r$, $p_\theta$, $p_\phi$', r'$r$', r'$\theta$, $\phi$']
                         panels[1:3] = 2
-                if case.plot_traj[2] == 'lab':
-                    yc = case.rotating(yc, -case.Phi(t_eval), type=case.plot_traj[1])
-                if case.plot_traj[0] == 'dissociated' and xp.any(dissociated):
-                    yc = yc[xp.tile(dissociated, 2 * case.dim), :]
-                elif case.plot_traj[0] == 'not_dissociated' and (not xp.all(dissociated)):
-                    yc = yc[xp.logical_not(xp.tile(dissociated, 2 * case.dim)), :]
-                elif case.plot_traj[0] != 'all':
-                    print('\033[33m          Warning: All trajectories are being displayed \033[00m')
                 for k, coord in enumerate(xp.split(yc, 2 * case.dim, axis=0)):
                     if panels[k] == 2:
-                        coord = coord % (2 * xp.pi)
-                        axs[panels[k]].set_ylim((0, 2 * xp.pi))
-                        axs[panels[k]].set_yticks([0, xp.pi, 2 * xp.pi])
-                        axs[panels[k]].set_yticklabels(['0', r'$\pi$', r'$2\pi$'])
+                        axs[panels[k]].set_ylim((-xp.pi, xp.pi))
+                        axs[panels[k]].set_yticks([-xp.pi, 0, xp.pi])
+                        axs[panels[k]].set_yticklabels([r'$-\pi$', r'0', r'$\pi$'])
                     axs[panels[k]].plot(t_eval, coord.transpose(), colors[k], label=labels[k])
                 for ylabel, ax in zip(ylabels, axs):
-                    ax.legend(loc='upper right', labelcolor='linecolor')
+                    handles, labels = ax.get_legend_handles_labels()
+                    by_label = dict(zip(labels, handles))
+                    ax.legend(by_label.values(), by_label.keys(), loc='upper right', labelcolor='linecolor')
                     ax.set_ylabel(ylabel)
                 plt.show()
 

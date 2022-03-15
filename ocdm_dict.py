@@ -4,7 +4,7 @@
 
 import numpy as xp
 
-Method = 'trajectories'
+Method = 'dissociation'
 
 dimension = 2
 
@@ -16,13 +16,13 @@ te = [15, 50, 15]
 Energy0 = -0.001
 
 r = [2.5, 15]
-Ntraj = 5
-plot_traj = ['dissociated', 'cartesian', 'lab']
-dpi = 1000
+Ntraj = 10000
+type_traj = ['dissociated', 'spherical', 'rotated']
+dpi = 3000
 
 SaveData = False
-PlotResults = True
-Parallelization = (False, 3)
+PlotResults = False
+Parallelization = (True, 50)
 
 darkmode = True
 
@@ -40,9 +40,9 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'r': r,
         'dpi': dpi,
         'Ntraj': Ntraj,
-        'plot_traj': plot_traj,
+        'type_traj': type_traj,
         'ode_solver': 'RK45',
-        'Tol': [1e-6, 1e-3],
+        'Tol': [1e-8, 1e-5],
         'SaveData': SaveData,
         'PlotResults': PlotResults,
         'contour_levels': 50,

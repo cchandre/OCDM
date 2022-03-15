@@ -217,5 +217,8 @@ class DiaMol:
 			return self.cart2sph(y__)
 		return y__
 
+	def mod(self, y_):
+		return self.cart2sph(self.sph2cart(y_))
+
 if __name__ == "__main__":
 	main()
