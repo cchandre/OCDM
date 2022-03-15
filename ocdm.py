@@ -143,7 +143,7 @@ class DiaMol:
 				r0 = [max(self.r[0], self.rH0[0]), min(self.r[1], self.rH0[1])]
 				r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
 				theta = xp.pi * xp.random.random((2, N))
-				phi = 2 * xp.pi * xp.random.random((2, N))
+				phi = 2 * xp.pi * xp.random.random((2, N)) - xp.pi
 				P = xp.sqrt(2 * self.mu * (self.Energy0 - self.eps(r)))
 				if self.dim == 2:
 					p_r = P * xp.cos(phi[1])

@@ -8,7 +8,7 @@ Method = 'dissociation'
 
 dimension = 2
 
-E0 = xp.linspace(0, 1e-1, 150)
+E0 = xp.linspace(0, 1e-1, 500)
 Omega = lambda t: 2e-5
 envelope = 'sinus'
 te = [15, 50, 15]
@@ -16,7 +16,7 @@ te = [15, 50, 15]
 Energy0 = -0.001
 
 r = [2.5, 15]
-Ntraj = 10000
+Ntraj = 100000
 type_traj = ['dissociated', 'spherical', 'rotated']
 dpi = 3000
 
