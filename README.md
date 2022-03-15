@@ -39,7 +39,7 @@ ___
 ####
 These options may be changed in [`ocdm_dict.py`](https://github.com/cchandre/OCDM/blob/main/ocdm_dict.py) (see [solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html)):
 - *ode_solver*: integration method to use (default='RK45')
-- *Tol*: absolute and relative tolerances (default=[1e-6, 1e-3])
+- *Tol*: absolute and relative tolerances (default=[1e-8, 1e-5])
 
 ---
 For more information: <cristel.chandre@cnrs.fr>
