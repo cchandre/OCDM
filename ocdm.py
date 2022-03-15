@@ -205,10 +205,10 @@ class DiaMol:
 			x, y, px, py = xp.split(y__, 4)
 		elif self.dim == 3:
 			x, y, z, px, py, pz = xp.split(y__, 6)
-		xr = x * xp.cos(angle) + y * xp.sin(angle)
-		yr = -x * xp.sin(angle) + y * xp.cos(angle)
-		pxr = px * xp.cos(angle) + py * xp.sin(angle)
-		pyr = -px * xp.sin(angle) + py * xp.cos(angle)
+		xr = x * xp.cos(angle) - y * xp.sin(angle)
+		yr = x * xp.sin(angle) + y * xp.cos(angle)
+		pxr = px * xp.cos(angle) - py * xp.sin(angle)
+		pyr = px * xp.sin(angle) + py * xp.cos(angle)
 		if self.dim == 2:
 			y__ = xp.concatenate((xr, yr, pxr, pyr))
 		elif self.dim == 3:
