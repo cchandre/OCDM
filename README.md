@@ -29,7 +29,7 @@ ___
 - *Energy0*: float (negative); value of the initial energy (atomic units)
 - *r*: array of two floats; minimum and maximum values of *r* for the display of potentials, and range of *r* for the selection of initial conditions (atomic units)
 - *Ntraj*: integer; number of trajectories to be integrated
-- *plot_traj*: array of two strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical'] for the type of trajectories to be plotted
+- *plot_traj*: array of 3 strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical', 'lab' or 'rotated'] for the type of trajectories to be plotted
 - *dpi*: integer; dpi value for the figures 
 ####
 - *SaveData*: boolean; if True, the results are saved in a `.mat` file; NB: the dissociation probabilities are saved in a `.txt` file regardless of the value of SaveData
