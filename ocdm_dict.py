@@ -4,11 +4,11 @@
 
 import numpy as xp
 
-Method = 'dissociation'
+Method = 'trajectories'
 
 dimension = 2
 
-E0 = xp.linspace(0, 1e-1, 150)
+E0 = 1e-1
 Omega = lambda t: 2e-5
 envelope = 'sinus'
 te = [15, 50, 15]
@@ -16,13 +16,13 @@ te = [15, 50, 15]
 Energy0 = -0.001
 
 r = [2.5, 15]
-Ntraj = 500
-plot_traj = ['dissociated', 'spherical']
-dpi = 300
+Ntraj = 5
+plot_traj = ['dissociated', 'cartesian', 'lab']
+dpi = 1000
 
 SaveData = False
-PlotResults = False
-Parallelization = (True, 3)
+PlotResults = True
+Parallelization = (False, 3)
 
 darkmode = True
 

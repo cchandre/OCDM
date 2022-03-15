@@ -60,6 +60,8 @@ class DiaMol:
 			setattr(self, key, dict[key])
 		self.DictParams = dict
 		self.Omega = lambda t: Omega(t)
+		t = sp.symbols('t')
+		self.Phi = sp.lambdify(t, sp.integrate(self.Omega(t), t))
 		a_s = [42.13, 15.4, 5.4, -5.25]
 		a_m = [-18648.35842481222, 13674.730066523876, -3950.494622828384, 564.5884199329207, -39.995975029375124, 1.125168670489689]
 		r_a = [5.5, 7.8]
@@ -97,17 +99,17 @@ class DiaMol:
 		else:
 			self.rH0 = []
 
-	def eqn_H(self, t, y):
+	def eqn_H(self, t, y_):
 		Eeff = self.E0**2 * self.env(t)**2 / 4
 		if self.dim == 2:
-			r, phi, p_r, p_phi = xp.split(y, 4)
+			r, phi, p_r, p_phi = xp.split(y_, 4)
 			dr = p_r / self.mu
 			dphi = p_phi / (self.mu * r**2) - self.Omega(t)
 			dp_r = p_phi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
 			dp_phi = -Eeff * self.Dal(r) * xp.sin(2 * phi)
 			return xp.concatenate((dr, dphi, dp_r, dp_phi), axis=None)
 		elif self.dim == 3:
-			r, theta, phi, p_r, p_theta, p_phi = xp.split(y, 6)
+			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
 			dr = p_r / self.mu
 			dtheta = p_theta / (self.mu * r**2)
 			dphi = p_phi / (self.mu * r**2 * xp.sin(theta)**2) - self.Omega(t)
@@ -116,13 +118,13 @@ class DiaMol:
 			dp_phi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
 			return xp.concatenate((dr, dtheta, dphi, dp_r, dp_theta, dp_phi), axis=None)
 
-	def energy(self, t, y):
+	def energy(self, t, y_):
 		Eeff = self.E0**2 * self.env(t)**2 / 4
 		if self.dim == 2:
-			r, phi, p_r, p_phi = xp.split(y, 4)
+			r, phi, p_r, p_phi = xp.split(y_, 4)
 			H = (p_r**2 + p_phi**2 / r**2) / (2 * self.mu) + self.eps(r) - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
 		elif self.dim == 3:
-			r, theta, phi, p_r, p_theta, p_phi = xp.split(y, 6)
+			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
 			H = (p_r**2 + p_theta**2 / r**2 + p_phi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r) - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
 		return H
 
@@ -155,24 +157,24 @@ class DiaMol:
 		print('\033[33m          Warning: Empty energy surface \033[00m')
 		return []
 
-	def check_dissociation(self, y):
+	def check_dissociation(self, y_):
 		if self.dim == 2:
-			r, phi, p_r, p_phi = xp.split(y, 4)
+			r, phi, p_r, p_phi = xp.split(y_, 4)
 			H = (p_r**2 + p_phi**2 / r**2) / (2 * self.mu) + self.eps(r)
 		elif self.dim == 3:
-			r, theta, phi, p_r, p_theta, p_phi = xp.split(y, 6)
+			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
 			H = (p_r**2 + p_theta**2 / r**2 + p_phi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r)
 		return (H > 0)
 
-	def cart2sph(self, y):
+	def cart2sph(self, y_):
 		if self.dim == 2:
-			x, y, px, py = xp.split(y, 4)
+			x, y, px, py = xp.split(y_, 4)
 			r, phi = xp.hypot(x, y), xp.arctan2(y, x)
 			p_r = (x * px + y * py) / r
 			p_phi = x * py - y * px
 			return xp.concatenate((r, phi, p_r, p_phi))
 		elif self.dim == 3:
-			x, y, z, px, py, pz = xp.split(y, 6)
+			x, y, z, px, py, pz = xp.split(y_, 6)
 			xy, phi = xp.hypot(x, y), xp.arctan2(y, x)
 			r, theta = xp.hypot(xy, z), xp.arctan2(hxy, z)
 			p_r = (x * px + y * py + z * pz) / r
@@ -180,20 +182,40 @@ class DiaMol:
 			p_phi = x * py - y * px
 			return xp.concatenate((r, theta, phi, p_r, p_theta, p_phi))
 
-	def sph2cart(self, y):
+	def sph2cart(self, y_):
 		if self.dim == 2:
-			r, phi, p_r, p_phi = xp.split(y, 4)
+			r, phi, p_r, p_phi = xp.split(y_, 4)
 			x, y = r * xp.cos(phi), r * xp.sin(phi)
 			px = p_r * xp.cos(phi) - p_phi * xp.sin(phi) / r
 			py = p_r * xp.sin(phi) + p_phi * xp.cos(phi) / r
 			return xp.concatenate((x, y, px, py))
 		elif self.dim == 3:
-			r, theta, phi, p_r, p_theta, p_phi = xp.split(y, 6)
+			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
 			x, y, z = r * xp.sin(theta) * xp.cos(phi), r * xp.sin(theta) * xp.sin(phi), r * xp.cos(theta)
 			px = p_r * xp.sin(theta) * xp.cos(phi) + p_theta * xp.cos(theta) * xp.cos(phi) / r - p_phi * xp.sin(phi) / (r * xp.sin(theta))
 			py = p_r * xp.sin(theta) * xp.sin(phi) + p_theta * xp.cos(theta) * xp.sin(phi) / r + p_phi * xp.cos(phi) / (r * xp.sin(theta))
 			pz = p_r * xp.cos(theta) - p_theta * xp.sin(theta) / r
 			return xp.concatenate((x, y, z, px, py, pz))
+
+	def rotating(self, y_, angle, type='cartesian'):
+		y__ = y_.copy()
+		if type == 'spherical':
+			y__  = self.sph2cart(y__)
+		if self.dim == 2:
+			x, y, px, py = xp.split(y__, 4)
+		elif self.dim == 3:
+			x, y, z, px, py, pz = xp.split(y__, 6)
+		xr = x * xp.cos(angle) + y * xp.sin(angle)
+		yr = -x * xp.sin(angle) + y * xp.cos(angle)
+		pxr = px * xp.cos(angle) + py * xp.sin(angle)
+		pyr = -px * xp.sin(angle) + py * xp.cos(angle)
+		if self.dim == 2:
+			y__ = xp.concatenate((xr, yr, pxr, pyr))
+		elif self.dim == 3:
+			y__ = xp.concatenate((xr, yr, z, pxr, pyr, pz))
+		if type == 'spherical':
+			return self.cart2sph(y__)
+		return y__
 
 if __name__ == "__main__":
 	main()

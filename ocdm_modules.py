@@ -32,21 +32,24 @@ from scipy.io import savemat
 import time
 from datetime import date
 import os
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 def run_method(case):
     if case.darkmode:
         cs = ['k', 'w', 'c', 'm', 'r']
     else:
         cs = ['w', 'k', 'b', 'm', 'r']
-    plt.rc('figure', facecolor=cs[0], titlesize=30, figsize=[8,8])
-    plt.rc('text', usetex=True, color=cs[1])
-    plt.rc('font', family='serif', size=24)
-    plt.rc('axes', facecolor=cs[0], edgecolor=cs[1], labelsize=30, labelcolor=cs[1], titlecolor=cs[1])
-    plt.rc('xtick', color=cs[1], labelcolor=cs[1])
-    plt.rc('ytick', color=cs[1], labelcolor=cs[1])
-    plt.rc('image', cmap='bwr')
+    if case.PlotResults:
+        plt.rc('figure', facecolor=cs[0], titlesize=30, figsize=[8,8])
+        plt.rc('text', usetex=True, color=cs[1])
+        plt.rc('font', family='serif', size=24)
+        plt.rc('axes', facecolor=cs[0], edgecolor=cs[1], labelsize=30, labelcolor=cs[1], titlecolor=cs[1])
+        plt.rc('xtick', color=cs[1], labelcolor=cs[1])
+        plt.rc('ytick', color=cs[1], labelcolor=cs[1])
+        plt.rc('image', cmap='bwr')
     filestr = type(case).__name__
-    if case.Method == 'plot_potentials':
+    if case.Method == 'plot_potentials' and case.PlotResults:
         plt.rcParams.update({'figure.figsize': [16, 8]})
         fig, axs = plt.subplots(1, 2)
         r = xp.linspace(case.r[0], case.r[1], case.dpi)
@@ -60,7 +63,7 @@ def run_method(case):
             fig.savefig(filestr + '.png', dpi=case.dpi)
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.show()
-    elif case.Method == 'plot_ZVS':
+    elif case.Method == 'plot_ZVS' and case.PlotResults:
         filestr += '_' + 'E0{:.2e}'.format(case.E0).replace('.', '')
         fig, ax = plt.subplots(1, 1)
         r = xp.linspace(case.r[0], case.r[1], case.dpi)
@@ -114,7 +117,7 @@ def run_method(case):
                 panels = xp.asarray((1,) * case.dim + (0,) * case.dim)
                 colors = xp.tile(cs[2:2+case.dim], 2)
                 if case.plot_traj[1] == 'cartesian':
-                    yc = case.sph2cart(sol.y).transpose()
+                    yc = case.sph2cart(sol.y)
                     if case.dim == 2:
                         labels = [r'$x$', r'$y$', r'$p_x$', r'$p_y$']
                         ylabels = [r'$p_x$, $p_y$', r'$x$, $y$']
@@ -122,7 +125,7 @@ def run_method(case):
                         labels = [r'$x$', r'$y$', r'$z$', r'$p_x$', r'$p_y$', r'$p_z$']
                         ylabels = [r'$p_x$, $p_y$, $p_z$', r'$x$, $y$, $z$']
                 elif case.plot_traj[1] == 'spherical':
-                    yc = sol.y.transpose()
+                    yc = sol.y.copy()
                     if case.dim == 2:
                         labels = [r'$r$', r'$\phi$', r'$p_r$', r'$p_\phi$']
                         ylabels = [r'$p_r$, $p_\phi$', r'$r$', r'$\phi$']
@@ -131,19 +134,21 @@ def run_method(case):
                         labels = [r'$r$', r'$\theta$', r'$\phi$', r'$p_r$', r'$p_\theta$', r'$p_\phi$']
                         ylabels = [r'$p_r$, $p_\theta$, $p_\phi$', r'$r$', r'$\theta$, $\phi$']
                         panels[1:3] = 2
+                if case.plot_traj[2] == 'lab':
+                    yc = case.rotating(yc, -case.Phi(t_eval), type=case.plot_traj[1])
                 if case.plot_traj[0] == 'dissociated' and xp.any(dissociated):
-                    yc = yc[:, xp.tile(dissociated, 2 * case.dim)]
+                    yc = yc[xp.tile(dissociated, 2 * case.dim), :]
                 elif case.plot_traj[0] == 'not_dissociated' and (not xp.all(dissociated)):
-                    yc = yc[:, xp.logical_not(xp.tile(dissociated, 2 * case.dim))]
+                    yc = yc[xp.logical_not(xp.tile(dissociated, 2 * case.dim)), :]
                 elif case.plot_traj[0] != 'all':
                     print('\033[33m          Warning: All trajectories are being displayed \033[00m')
-                for k, coord in enumerate(xp.split(yc, 2 * case.dim, axis=1)):
+                for k, coord in enumerate(xp.split(yc, 2 * case.dim, axis=0)):
                     if panels[k] == 2:
                         coord = coord % (2 * xp.pi)
                         axs[panels[k]].set_ylim((0, 2 * xp.pi))
                         axs[panels[k]].set_yticks([0, xp.pi, 2 * xp.pi])
                         axs[panels[k]].set_yticklabels(['0', r'$\pi$', r'$2\pi$'])
-                    axs[panels[k]].plot(t_eval, coord, colors[k], label=labels[k])
+                    axs[panels[k]].plot(t_eval, coord.transpose(), colors[k], label=labels[k])
                 for ylabel, ax in zip(ylabels, axs):
                     ax.legend(loc='upper right', labelcolor='linecolor')
                     ax.set_ylabel(ylabel)
