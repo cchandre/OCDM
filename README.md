@@ -45,5 +45,5 @@ These options may be changed in [`ocdm_dict.py`](https://github.com/cchandre/OCD
 For more information: <cristel.chandre@cnrs.fr>
 
 <p align="center">
-  <img src="https://github.com/cchandre/OCDM/blob/main/Figure_1.png" alt="Example" width="600"/>
+  <img src="https://github.com/cchandre/OCDM/blob/main/Figure_1.png" alt="Example" width="400"/>
 </p>
