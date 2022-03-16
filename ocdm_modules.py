@@ -26,6 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import numpy as xp
+import sympy as sp
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.io import savemat
@@ -102,9 +103,7 @@ def run_method(case):
                 yc = yc[xp.logical_not(xp.tile(dissociated, 2 * case.dim)), :]
             elif case.type_traj[0] != 'all' and (case.PlotResults or case.SaveData):
                 print('\033[33m          Warning: All trajectories are being displayed and/or saved \033[00m')
-            if case.SaveData:
-                save_data(case, yc, filestr)
-                print('\033[90m        Data saved in {}.mat \033[00m'.format(filestr))
+            save_data(case, yc, filestr)
             if case.Method == 'dissociation':
                 proba = dissociated.sum() / case.Ntraj
                 print('\033[96m          for E0 = {:.3e}, dissociation probability = {:.3e} \033[00m'.format(case.E0, proba))
@@ -156,6 +155,41 @@ def run_method(case):
                     ax.legend(by_label.values(), by_label.keys(), loc='upper right', labelcolor='linecolor')
                     ax.set_ylabel(ylabel)
                 plt.show()
+    elif case.Method == 'poincaré':
+        filestr += '_' + 'E0{:.2e}'.format(case.E0).replace('.', '')
+        t = sp.symbols('t')
+        if sp.diff(case.Omega(t), t) != 0:
+            print('\033[33m          Warning: The frequency Omega is not constant \033[00m')
+        Omega = case.Omega(0)
+        def event_ps(t, y_):
+            return (y_[1] + xp.pi) % (2 * xp.pi) - xp.pi
+        event_ps.direction = -1
+        pr_max = lambda r: xp.sqrt(2 * case.mu * (case.mu * r**2 * Omega**2 / 2 + case.E0**2 / 4 * case.al_para(r) - case.eps(r) + case.Energy0))
+        rpr = xp.random.random((2, case.Ntraj))
+        r = (case.r[1] - case.r[0]) * rpr[0] + case.r[0]
+        p_r = pr_max(r) * (2 * rpr[1] - 1)
+        p_phi = case.mu * r**2 * Omega + event_ps.direction * r * xp.sqrt(pr_max(r)**2 - p_r**2)
+        y0_ = xp.vstack((r, xp.zeros(case.Ntraj), p_r, p_phi))
+        y_events = []
+        start = time.time()
+        for y0 in y0_.transpose():
+            sol = solve_ivp(case.eqn_H, (0, case.te.sum()), y0, events=event_ps, method=case.ode_solver, atol=case.Tol[0], rtol=case.Tol[1])
+            if xp.any(y_events):
+                y_events = xp.vstack((y_events, sol.y_events[0]))
+            else:
+                y_events = sol.y_events[0]
+        print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
+        save_data(case, y_events, filestr)
+        if case.PlotResults:
+            fig, ax = plt.subplots(1, 1)
+            r = xp.linspace(case.r[0], case.r[1], case.dpi)
+            ax.plot(r, pr_max(r), 'r')
+            ax.plot(r, -pr_max(r), 'r')
+            ax.plot(y_events[1:, 0], y_events[1:, 2], cs[1] + '.')
+            ax.set_xlim(case.r)
+            ax.set_xlabel(r'$r$')
+            ax.set_ylabel(r'$p_r$')
+            plt.show()
 
 def save_data(case, data, filestr, info=[]):
     if case.SaveData:

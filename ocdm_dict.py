@@ -4,31 +4,33 @@
 
 import numpy as xp
 
-Method = 'dissociation'
+Method = 'poincaré'
 
 dimension = 2
 
-E0 = xp.linspace(0, 1e-1, 500)
+E0 = 5e-2
 Omega = lambda t: 2e-5
 envelope = 'sinus'
-te = [15, 50, 15]
+te = [15, 100, 15]
 
 Energy0 = -0.001
 
 r = [2.5, 15]
-Ntraj = 100000
+Ntraj = 50
 type_traj = ['dissociated', 'spherical', 'rotated']
 dpi = 3000
 
 SaveData = False
-PlotResults = False
-Parallelization = (True, 50)
+PlotResults = True
+Parallelization = (False, 50)
 
 darkmode = True
 
 ###################################################################################################
 ##                             DO NOT EDIT BELOW                                                 ##
 ###################################################################################################
+if Method == 'poincaré':
+    envelope = 'const'
 dict_list = [{'Method': Method} for _ in xp.atleast_1d(E0)]
 for dict, E in zip(dict_list, xp.atleast_1d(E0)):
     dict.update({
