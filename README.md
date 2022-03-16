@@ -19,7 +19,7 @@ The list of Python packages and their version are specified in [`requirements.tx
 ___
 ##  Parameter dictionary
 
-- *Method*: string; 'plot_potentials', 'plot_ZVS', 'dissociation', 'trajectories'
+- *Method*: string; 'plot_potentials', 'plot_ZVS', 'dissociation', 'trajectories', 'poincaré'; NB: The Poincaré section is *&phi;*=0 (mod 2 &pi;) with *&phi;'*<0 in the plane (*r*,*p*<sub>*r*</sub>)
 ####
 - *dimension*: 2 or 3; dimension of the computation
 - *E0*: float or array of floats; amplitude(s) *E*<sub>0</sub> of the electric field, *E*(*t*) = *E*<sub>0 </sub>*f*(*t*) [<b>e<sub>*x*</sub></b> cos&Phi;(*t*) + <b>e<sub>*y*</sub></b> sin&Phi;(*t*)] cos&omega;*t*, considered in the computation (atomic units)
