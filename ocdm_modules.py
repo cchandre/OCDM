@@ -103,7 +103,8 @@ def run_method(case):
                 yc = yc[xp.logical_not(xp.tile(dissociated, 2 * case.dim)), :]
             elif case.type_traj[0] != 'all' and (case.PlotResults or case.SaveData):
                 print('\033[33m          Warning: All trajectories are being displayed and/or saved \033[00m')
-            save_data(case, yc, filestr)
+            t_eval *= 2.42e-5
+            save_data(case, xp.array([t_eval, yc], dtype=object), filestr)
             if case.Method == 'dissociation':
                 proba = dissociated.sum() / case.Ntraj
                 print('\033[96m          for E0 = {:.3e}, dissociation probability = {:.3e} \033[00m'.format(case.E0, proba))
@@ -119,12 +120,12 @@ def run_method(case):
                     axs = fig.add_gridspec(2, hspace=0.2).subplots(sharex=True)
                 elif case.type_traj[1] == 'spherical':
                     axs = fig.add_gridspec(3, hspace=0.2).subplots(sharex=True)
-                te = xp.cumsum(case.te)
+                te = xp.cumsum(case.te) * 2.42e-5
                 for ax in axs:
                     for t in te:
                         ax.axvline(x=t, lw=1, color=cs[1])
                     ax.set_xlim((t_eval[0], t_eval[-1]))
-                    ax.set_xlabel(r'$t$')
+                    ax.set_xlabel(r'$t$ (ps)')
                 panels = xp.asarray((1,) * case.dim + (0,) * case.dim)
                 colors = xp.tile(cs[2:2+case.dim], 2)
                 if case.type_traj[1] == 'cartesian':

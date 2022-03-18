@@ -4,20 +4,20 @@
 
 import numpy as xp
 
-Method = 'poincaré'
+Method = 'trajectories'
 
 dimension = 2
 
-E0 = 5e-2
-Omega = lambda t: 2e-5
+E0 = 2e-2
+Omega = lambda t: 7e-7 * t
 envelope = 'sinus'
-te = [15, 200, 15]
+te = [10, 50, 10]
 
-Energy0 = -0.001
+Energy0 = -0.07
 
-r = [2.5, 15]
-Ntraj = 100
-type_traj = ['dissociated', 'spherical', 'rotated']
+r = [2.5, 10]
+Ntraj = 10
+type_traj = ['all', 'spherical', 'rotated']
 dpi = 3000
 
 SaveData = False
@@ -47,7 +47,7 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'Ntraj': Ntraj,
         'type_traj': type_traj,
         'ode_solver': 'RK45',
-        'Tol': [1e-8, 1e-5],
+        'Tol': [1e-9, 1e-7],
         'SaveData': SaveData,
         'PlotResults': PlotResults,
         'contour_levels': 50,
