@@ -4,25 +4,25 @@
 
 import numpy as xp
 
-Method = 'trajectories'
+Method = 'dissociation'
 
 dimension = 2
 
-E0 = 2e-2
-Omega = lambda t: 7e-7 * t
+E0 = xp.linspace(0, 0.1, 30)
+Omega = lambda t: 7e-9 * t
 envelope = 'sinus'
 te = [10, 50, 10]
 
 Energy0 = -0.07
 
 r = [2.5, 10]
-Ntraj = 10
+Ntraj = 1000
 type_traj = ['all', 'spherical', 'rotated']
 dpi = 3000
 
 SaveData = False
-PlotResults = True
-Parallelization = (False, 50)
+PlotResults = False
+Parallelization = (True, 3)
 
 darkmode = True
 

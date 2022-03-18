@@ -82,7 +82,7 @@ def run_method(case):
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.show()
     elif case.Method in ['dissociation', 'trajectories']:
-        y0 = case.initcond(case.Ntraj)
+        y0 = case.initcond(case.Ntraj, choice_phi='fixed')
         t_eval = xp.linspace(0, case.te.sum(), case.dpi)
         if case.Method == 'dissociation':
             t_eval = xp.asarray([t_eval[0], t_eval[-1]])

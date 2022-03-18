@@ -137,13 +137,16 @@ class DiaMol:
 		elif self.envelope == 'trapez':
 			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te[2], 0))))
 
-	def initcond(self, N):
+	def initcond(self, N, choice_phi='random'):
 		if xp.any(self.rH0):
 			if (self.r[1] > self.rH0[0]) and (self.rH0[1] > self.r[0]):
 				r0 = [max(self.r[0], self.rH0[0]), min(self.r[1], self.rH0[1])]
 				r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
 				theta = xp.pi * xp.random.random((2, N))
-				phi = 2 * xp.pi * xp.random.random((2, N)) - xp.pi
+				if choice_phi == 'random':
+					phi = 2 * xp.pi * xp.random.random((2, N)) - xp.pi
+				elif choice_phi == 'fixed':
+					phi = xp.zeros((2, N))
 				P = xp.sqrt(2 * self.mu * (self.Energy0 - self.eps(r)))
 				if self.dim == 2:
 					p_r = P * xp.cos(phi[1])
