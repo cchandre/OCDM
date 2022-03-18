@@ -85,7 +85,7 @@ def run_method(case):
         y0 = case.initcond(case.Ntraj)
         t_eval = xp.linspace(0, case.te.sum(), case.dpi)
         if case.Method == 'dissociation':
-            t_eval = [t_eval[0], t_eval[-1]]
+            t_eval = xp.asarray([t_eval[0], t_eval[-1]])
         if xp.any(y0):
             start = time.time()
             sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, method=case.ode_solver, t_eval=t_eval, atol=case.Tol[0], rtol=case.Tol[1])
