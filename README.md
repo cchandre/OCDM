@@ -30,7 +30,7 @@ ___
 - *initial_conditions*: string ('microcanonical', 'fixedJ'); method for the selection of initial conditions
 - *Energy0*: float (negative); value of the initial energy (atomic units) in the case *initial_conditions*='microcanonical'
 -  *r*: array of two floats; minimum and maximum values of *r* for the display of potentials, and range of *r* (atomic units) for the selection of initial conditions in the case *initial_conditions*='microcanonical'
-- *initial_J*: float or array of two floats; initial values of angular momentum (atomic units) *p*<sub>*&phi;*</sub> (2D) or [*p*<sub>*&phi;*</sub>, *p*<sub>*&theta;*</sub>] (3D)
+- *initial_J*: float or array of two floats; initial values of angular momentum (atomic units) *p*<sub>*&phi;*</sub> (2D) or [*p*<sub>*&phi;*</sub>, *p*<sub>*&theta;*</sub>] (3D) in the case *initial_conditions*='fixedJ'
 - *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical', 'lab' or 'rotated'] for the type of trajectories to be plotted and/or saved
 - *dpi*: integer; dpi value for the figures 
 ####
