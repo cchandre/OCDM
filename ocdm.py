@@ -158,12 +158,12 @@ class DiaMol:
 			r = self.re * xp.ones(N)
 			phi = 2 * xp.pi * xp.random.random(N) - xp.pi
 			p_r = xp.zeros(N)
-			p_phi = self.J[0] * xp.ones(N)
+			p_phi = self.initial_J[0] * xp.ones(N)
 			if self.dim == 2:
 				return xp.concatenate((r, phi, p_r, p_phi), axis=None)
 			elif self.dim == 3:
 				theta = xp.pi * xp.random.random(N)
-				p_theta = self.J[1] * xp.ones(N)
+				p_theta = self.initial_J[1] * xp.ones(N)
 				return xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
 
 	def check_dissociation(self, y_):
