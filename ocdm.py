@@ -68,16 +68,16 @@ class DiaMol:
 		b_s = [25.29, 2.87, -0.09, -0.42]
 		b_m = [79.97579598889766, -64.21463688187681, 26.47584281231729, -4.994574090432429, 0.4487817094919498, -0.015614680049778793]
 		r_b = [3.75, 7.25]
-		re, De, gam, al_Cl, al_Cl2 = 3.756775476853331, 0.0911, 0.566219624544, 15.5421, 2 * 15.5421
+		self.re, self.De, self.gam, al_Cl, al_Cl2 = 3.758, 0.0911, 0.566, 15.5421, 2 * 15.5421
 		self.mu = 32545.85
 		r = sp.Symbol('r')
-		eps = De * (1 - sp.exp(-gam * (r - re)))**2 - De
+		eps = self.De * (1 - sp.exp(-self.gam * (r - self.re)))**2 - self.De
 		d_eps = sp.diff(eps, r)
 		self.eps = sp.lambdify(r, eps)
 		self.d_eps = sp.lambdify(r, d_eps)
 		poly = lambda r, a: sum(c * r**k for k, c in enumerate(a))
 		deriv = lambda fun: sp.lambdify(r, sp.diff(fun, r))
-		para_s, perp_s = poly(r - re, a_s), poly(r - re, b_s)
+		para_s, perp_s = poly(r - self.re, a_s), poly(r - self.re, b_s)
 		para_m, perp_m = poly(r, a_m), poly(r, b_m)
 		para_l = (al_Cl2 + 4 * al_Cl**2 / r**3) / (1 - 4 * al_Cl**2 / r**6)
 		perp_l = (al_Cl2 - 2 * al_Cl**2 / r**3) / (1 - al_Cl**2 / r**6)
@@ -133,10 +133,10 @@ class DiaMol:
 		elif self.envelope == 'trapez':
 			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te[2], 0))))
 
-	def initcond(self, N, choice='microcanonical'):
-		if choice == 'microcanonical':
-			if -De < self.Energy0 < 0:
-				rH0 = [re - xp.log(1 + xp.sqrt(1 + self.Energy0 / De)) / gam, re - xp.log(1 - xp.sqrt(1 + self.Energy0 / De)) / gam]
+	def initcond(self, N):
+		if self.initial_conditions == 'microcanonical':
+			if -self.De < self.Energy0 < 0:
+				rH0 = [self.re - xp.log(1 + xp.sqrt(1 + self.Energy0 / self.De)) / self.gam, self.re - xp.log(1 - xp.sqrt(1 + self.Energy0 / self.De)) / self.gam]
 				if (self.r[1] > rH0[0]) and (rH0[1] > self.r[0]):
 					r0 = [max(self.r[0], rH0[0]), min(self.r[1], rH0[1])]
 					r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
@@ -154,6 +154,17 @@ class DiaMol:
 						return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
 			print('\033[33m          Warning: Empty energy surface \033[00m')
 			return []
+		elif self.initial_conditions == 'fixedJ':
+			r = self.re * xp.ones(N)
+			phi = 2 * xp.pi * xp.random.random(N) - xp.pi
+			p_r = xp.zeros(N)
+			p_phi = self.J[0] * xp.ones(N)
+			if self.dim == 2:
+				return xp.concatenate((r, phi, p_r, p_phi), axis=None)
+			elif self.dim == 3:
+				theta = xp.pi * xp.random.random(N)
+				p_theta = self.J[1] * xp.ones(N)
+				return xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
 
 	def check_dissociation(self, y_):
 		if self.dim == 2:
