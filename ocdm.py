@@ -68,10 +68,12 @@ class DiaMol:
 		b_s = [25.29, 2.87, -0.09, -0.42]
 		b_m = [79.97579598889766, -64.21463688187681, 26.47584281231729, -4.994574090432429, 0.4487817094919498, -0.015614680049778793]
 		r_b = [3.75, 7.25]
-		self.re, self.De, self.gam, al_Cl, al_Cl2 = 3.758, 0.0911, 0.566, 15.5421, 2 * 15.5421
-		self.mu = 32545.85
+		self.re = 3.751
+		self.pM = [0.0911, 1.07]
+		al_Cl, al_Cl2 = 15.5421, 2 * 15.5421
+		self.mu = 32548.53
 		r = sp.Symbol('r')
-		eps = self.De * (1 - sp.exp(-self.gam * (r - self.re)))**2 - self.De
+		eps = self.pM[0] * (1 - sp.exp(-self.pM[1] * (r - self.re)))**2 - self.pM[0]
 		d_eps = sp.diff(eps, r)
 		self.eps = sp.lambdify(r, eps)
 		self.d_eps = sp.lambdify(r, d_eps)
@@ -136,7 +138,7 @@ class DiaMol:
 	def initcond(self, N):
 		if self.initial_conditions == 'microcanonical':
 			if -self.De < self.Energy0 < 0:
-				rH0 = [self.re - xp.log(1 + xp.sqrt(1 + self.Energy0 / self.De)) / self.gam, self.re - xp.log(1 - xp.sqrt(1 + self.Energy0 / self.De)) / self.gam]
+				rH0 = [self.re - xp.log(1 + xp.sqrt(1 + self.Energy0 / self.pM[0])) / self.pM[1], self.re - xp.log(1 - xp.sqrt(1 + self.Energy0 / self.pM[0])) / self.pM[1]]
 				if (self.r[1] > rH0[0]) and (rH0[1] > self.r[0]):
 					r0 = [max(self.r[0], rH0[0]), min(self.r[1], rH0[1])]
 					r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
