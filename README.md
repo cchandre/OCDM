@@ -28,7 +28,7 @@ ___
 - *te*: array of 3 floats; duration of ramp-up, plateau and ramp-down (in picoseconds)
 - *Ntraj*: integer; number of trajectories to be integrated
 -  *r*: array of two floats; minimum and maximum values of *r* for the display of potentials, and range of *r* (atomic units) for the selection of initial conditions in the case *initial_conditions*='microcanonical'
-- *initial_J*: float or array of two floats; initial values of angular momentum (atomic units) *p*<sub>*&phi;*</sub> (2D) or [*p*<sub>*&phi;*</sub>, *p*<sub>*&theta;*</sub>] (3D)
+- *initial_J*: float or array of two floats; initial values of the total angular momentum (atomic units)
 - *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical', 'lab' or 'rotated'] for the type of trajectories to be plotted and/or saved
 - *dpi*: integer; dpi value for the figures 
 ####
