@@ -68,12 +68,12 @@ class DiaMol:
 		b_s = [25.29, 2.87, -0.09, -0.42]
 		b_m = [79.97579598889766, -64.21463688187681, 26.47584281231729, -4.994574090432429, 0.4487817094919498, -0.015614680049778793]
 		r_b = [3.75, 7.25]
-		self.re = 3.751
-		self.pM = [0.0911, 1.07]
+		self.re, self.De, self.gam = 3.751, 0.0911, 1.07
+		self.freqs = [2.55e-3, 1.11e-6]
 		al_Cl, al_Cl2 = 15.5421, 2 * 15.5421
 		self.mu = 32548.53
 		r = sp.Symbol('r')
-		eps = self.pM[0] * (1 - sp.exp(-self.pM[1] * (r - self.re)))**2 - self.pM[0]
+		eps = self.De * (1 - sp.exp(-self.gam * (r - self.re)))**2 - self.De
 		d_eps = sp.diff(eps, r)
 		self.eps = sp.lambdify(r, eps)
 		self.d_eps = sp.lambdify(r, d_eps)
@@ -135,38 +135,26 @@ class DiaMol:
 		elif self.envelope == 'trapez':
 			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te[2], 0))))
 
-	def initcond(self, N):
-		if self.initial_conditions == 'microcanonical':
-			if -self.De < self.Energy0 < 0:
-				rH0 = [self.re - xp.log(1 + xp.sqrt(1 + self.Energy0 / self.pM[0])) / self.pM[1], self.re - xp.log(1 - xp.sqrt(1 + self.Energy0 / self.pM[0])) / self.pM[1]]
-				if (self.r[1] > rH0[0]) and (rH0[1] > self.r[0]):
-					r0 = [max(self.r[0], rH0[0]), min(self.r[1], rH0[1])]
-					r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
-					theta = xp.pi * xp.random.random((2, N))
-					phi = 2 * xp.pi * xp.random.random((2, N)) - xp.pi
-					P = xp.sqrt(2 * self.mu * (self.Energy0 - self.eps(r)))
-					if self.dim == 2:
-						p_r = P * xp.cos(phi[1])
-						p_phi = P * xp.sin(phi[1]) * r
-						return xp.concatenate((r, phi[0], p_r, p_phi), axis=None)
-					elif self.dim == 3:
-						p_r = P * xp.cos(phi[1]) * xp.sin(theta[1])
-						p_theta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
-						p_phi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
-						return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
-			print('\033[33m          Warning: Empty energy surface \033[00m')
-			return []
-		elif self.initial_conditions == 'fixedJ':
-			r = self.re * xp.ones(N)
-			phi = 2 * xp.pi * xp.random.random(N) - xp.pi
-			p_r = xp.zeros(N)
-			p_phi = self.initial_J[0] * xp.ones(N)
-			if self.dim == 2:
-				return xp.concatenate((r, phi, p_r, p_phi), axis=None)
-			elif self.dim == 3:
-				theta = xp.pi * xp.random.random(N)
-				p_theta = self.initial_J[1] * xp.ones(N)
-				return xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
+	def initcond(self, N, Energy0):
+		if -self.De < Energy0 < 0:
+			rH0 = [self.re - xp.log(1 + xp.sqrt(1 + Energy0 / self.De)) / self.gam, self.re - xp.log(1 - xp.sqrt(1 + Energy0 / self.De)) / self.gam]
+			if (self.r[1] > rH0[0]) and (rH0[1] > self.r[0]):
+				r0 = [max(self.r[0], rH0[0]), min(self.r[1], rH0[1])]
+				r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
+				theta = xp.pi * xp.random.random((2, N))
+				phi = 2 * xp.pi * xp.random.random((2, N)) - xp.pi
+				P = xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)))
+				if self.dim == 2:
+					p_r = P * xp.cos(phi[1])
+					p_phi = P * xp.sin(phi[1]) * r
+					return xp.concatenate((r, phi[0], p_r, p_phi), axis=None)
+				elif self.dim == 3:
+					p_r = P * xp.cos(phi[1]) * xp.sin(theta[1])
+					p_theta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
+					p_phi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
+					return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
+		print('\033[33m          Warning: Empty energy surface \033[00m')
+		return []
 
 	def check_dissociation(self, y_):
 		if self.dim == 2:
