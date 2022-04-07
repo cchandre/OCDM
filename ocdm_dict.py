@@ -4,17 +4,18 @@
 
 import numpy as xp
 
-Method = 'dissociation'
+Method = 'trajectories'
 
 dimension = 2
 
-E0 = xp.linspace(0, 0.1, 30)
+E0 = 0.02
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5]
 
-Ntraj = 100
+Ntraj = 1
 r = [2.5, 10]
+initcond_type = [3.7652253365079305, 9.165843999595593, 1.2566370614359172, 30.495901363953813]
 initial_J = 30
 EnergyPS = []
 
@@ -22,8 +23,8 @@ type_traj = ['dissociated', 'spherical', 'rotated']
 dpi = 3000
 
 SaveData = False
-PlotResults = False
-Parallelization = (True, 3)
+PlotResults = True
+Parallelization = (False, 3)
 
 darkmode = True
 
@@ -44,12 +45,13 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'te': xp.asarray(te) / 2.42e-5,
         'Ntraj': Ntraj,
         'r': r,
+        'initcond_type': initcond_type,
         'initial_J': initial_J,
-        'EnergyPS' = EnergyPS,
+        'EnergyPS': EnergyPS,
         'type_traj': type_traj,
         'dpi': dpi,
         'ode_solver': 'DOP853',
-        'Tol': [1e-10, 1e-10],
+        'Tol': [1e-14, 1e-14],
         'SaveData': SaveData,
         'PlotResults': PlotResults,
         'contour_levels': 50,

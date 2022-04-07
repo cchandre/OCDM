@@ -79,7 +79,7 @@ class DiaMol:
 		self.d_eps = sp.lambdify(r, d_eps)
 		poly = lambda r, a: sum(c * r**k for k, c in enumerate(a))
 		deriv = lambda fun: sp.lambdify(r, sp.diff(fun, r))
-		para_s, perp_s = poly(r - self.re, a_s), poly(r - self.re, b_s)
+		para_s, perp_s = poly(r - 3.7567754768533316334, a_s), poly(r - 3.7567754768533316334, b_s)
 		para_m, perp_m = poly(r, a_m), poly(r, b_m)
 		para_l = (al_Cl2 + 4 * al_Cl**2 / r**3) / (1 - 4 * al_Cl**2 / r**6)
 		perp_l = (al_Cl2 - 2 * al_Cl**2 / r**3) / (1 - al_Cl**2 / r**6)
@@ -136,25 +136,28 @@ class DiaMol:
 			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te[2], 0))))
 
 	def initcond(self, N, Energy0):
-		if -self.De < Energy0 < 0:
-			rH0 = [self.re - xp.log(1 + xp.sqrt(1 + Energy0 / self.De)) / self.gam, self.re - xp.log(1 - xp.sqrt(1 + Energy0 / self.De)) / self.gam]
-			if (self.r[1] > rH0[0]) and (rH0[1] > self.r[0]):
-				r0 = [max(self.r[0], rH0[0]), min(self.r[1], rH0[1])]
-				r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
-				theta = xp.pi * xp.random.random((2, N))
-				phi = 2 * xp.pi * xp.random.random((2, N)) - xp.pi
-				P = xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)))
-				if self.dim == 2:
-					p_r = P * xp.cos(phi[1])
-					p_phi = P * xp.sin(phi[1]) * r
-					return xp.concatenate((r, phi[0], p_r, p_phi), axis=None)
-				elif self.dim == 3:
-					p_r = P * xp.cos(phi[1]) * xp.sin(theta[1])
-					p_theta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
-					p_phi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
-					return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
-		print('\033[33m          Warning: Empty energy surface \033[00m')
-		return []
+		if self.initcond_type == 'microcanonical':
+			if -self.De < Energy0 < 0:
+				rH0 = [self.re - xp.log(1 + xp.sqrt(1 + Energy0 / self.De)) / self.gam, self.re - xp.log(1 - xp.sqrt(1 + Energy0 / self.De)) / self.gam]
+				if (self.r[1] > rH0[0]) and (rH0[1] > self.r[0]):
+					r0 = [max(self.r[0], rH0[0]), min(self.r[1], rH0[1])]
+					r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
+					theta = xp.pi * xp.random.random((2, N))
+					phi = 2 * xp.pi * xp.random.random((2, N)) - xp.pi
+					P = xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)))
+					if self.dim == 2:
+						p_r = P * xp.cos(phi[1])
+						p_phi = P * xp.sin(phi[1]) * r
+						return xp.concatenate((r, phi[0], p_r, p_phi), axis=None)
+					elif self.dim == 3:
+						p_r = P * xp.cos(phi[1]) * xp.sin(theta[1])
+						p_theta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
+						p_phi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
+						return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
+			print('\033[33m          Warning: Empty energy surface \033[00m')
+			return []
+		elif not isinstance(self.initcond_type, str):
+			return xp.asarray(self.initcond_type)
 
 	def check_dissociation(self, y_):
 		if self.dim == 2:
