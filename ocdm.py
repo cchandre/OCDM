@@ -63,11 +63,11 @@ class DiaMol:
 		t = sp.symbols('t')
 		self.Phi = sp.lambdify(t, sp.integrate(self.Omega(t), t))
 		a_s = [42.13, 15.4, 5.4, -5.25]
-		a_m = [-18648.35842481222, 13674.730066523876, -3950.494622828384, 564.5884199329207, -39.995975029375124, 1.125168670489689]
-		r_a = [5.5, 7.8]
+		a_m = [-1599.0948228665286, 1064.701691434201, -262.7958617988855, 31.287242627165202, -1.8164825476900417, 0.04141328363593082]
+		r_a = [5, 10]
 		b_s = [25.29, 2.87, -0.09, -0.42]
-		b_m = [79.97579598889766, -64.21463688187681, 26.47584281231729, -4.994574090432429, 0.4487817094919498, -0.015614680049778793]
-		r_b = [3.75, 7.25]
+		b_m = [68.28948313113857, -56.39145030911223, 25.523842390023567, -5.33917063891859, 0.5409284377558191, -0.02155141584655734]
+		r_b = [3, 6]
 		self.re, self.De, self.gam = 3.756, 0.0915, 1.0755
 		self.freqs = [2.5502e-3, 1.1098e-6]
 		al_Cl, al_Cl2 = 15.5421, 2 * 15.5421
@@ -79,7 +79,7 @@ class DiaMol:
 		self.d_eps = sp.lambdify(r, d_eps)
 		poly = lambda r, a: sum(c * r**k for k, c in enumerate(a))
 		deriv = lambda fun: sp.lambdify(r, sp.diff(fun, r))
-		para_s, perp_s = poly(r - 3.7567754768533316334, a_s), poly(r - 3.7567754768533316334, b_s)
+		para_s, perp_s = poly(r - self.re, a_s), poly(r - self.re, b_s)
 		para_m, perp_m = poly(r, a_m), poly(r, b_m)
 		para_l = (al_Cl2 + 4 * al_Cl**2 / r**3) / (1 - 4 * al_Cl**2 / r**6)
 		perp_l = (al_Cl2 - 2 * al_Cl**2 / r**3) / (1 - al_Cl**2 / r**6)
@@ -136,7 +136,7 @@ class DiaMol:
 			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te[2], 0))))
 
 	def initcond(self, N, Energy0):
-		if self.initcond_type == 'microcanonical':
+		if self.initial_conditions == 'microcanonical':
 			if -self.De < Energy0 < 0:
 				rH0 = [self.re - xp.log(1 + xp.sqrt(1 + Energy0 / self.De)) / self.gam, self.re - xp.log(1 - xp.sqrt(1 + Energy0 / self.De)) / self.gam]
 				if (self.r[1] > rH0[0]) and (rH0[1] > self.r[0]):
@@ -157,7 +157,7 @@ class DiaMol:
 			print('\033[33m          Warning: Empty energy surface \033[00m')
 			return []
 		elif not isinstance(self.initcond_type, str):
-			return xp.asarray(self.initcond_type)
+			return self.initial_conditions.flatten('F')
 
 	def check_dissociation(self, y_):
 		if self.dim == 2:

@@ -4,7 +4,7 @@
 
 import numpy as xp
 
-Method = 'trajectories'
+Method = 'plot_potentials'
 
 dimension = 2
 
@@ -15,7 +15,7 @@ te = [5, 40, 5]
 
 Ntraj = 1
 r = [2.5, 10]
-initcond_type = [3.7652253365079305, 9.165843999595593, 1.2566370614359172, 30.495901363953813]
+initial_conditions = [3.7652253365079305, 9.165843999595593, 1.2566370614359172, 30.495901363953813]
 initial_J = 30
 EnergyPS = []
 
@@ -37,6 +37,9 @@ if Method == 'poincaré':
     te = [0, sum(te), 0]
     type_traj = ['all', 'spherical', 'rotated']
 dict_list = [{'Method': Method} for _ in xp.atleast_1d(E0)]
+if not isinstance(initial_conditions, str):
+    initial_conditions = xp.asarray(initial_conditions)
+    Ntraj = len(initial_conditions.transpose()[0])
 for dict, E in zip(dict_list, xp.atleast_1d(E0)):
     dict.update({
         'dim': dimension,
@@ -45,13 +48,13 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'te': xp.asarray(te) / 2.42e-5,
         'Ntraj': Ntraj,
         'r': r,
-        'initcond_type': initcond_type,
+        'initial_conditions': initial_conditions,
         'initial_J': initial_J,
         'EnergyPS': EnergyPS,
         'type_traj': type_traj,
         'dpi': dpi,
         'ode_solver': 'DOP853',
-        'Tol': [1e-14, 1e-14],
+        'Tol': [1e-10, 1e-10],
         'SaveData': SaveData,
         'PlotResults': PlotResults,
         'contour_levels': 50,
