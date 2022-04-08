@@ -156,7 +156,7 @@ class DiaMol:
 						return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
 			print('\033[33m          Warning: Empty energy surface \033[00m')
 			return []
-		elif not isinstance(self.initcond_type, str):
+		elif not isinstance(self.initial_conditions, str):
 			return self.initial_conditions.flatten('F')
 
 	def check_dissociation(self, y_):
