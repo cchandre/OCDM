@@ -28,6 +28,7 @@ ___
 - *te*: array of 3 floats; duration of ramp-up, plateau and ramp-down (in picoseconds)
 - *Ntraj*: integer; number of trajectories to be integrated
 -  *r*: array of two floats; minimum and maximum values of *r* for the display of potentials, and range of *r* (atomic units) for the selection of initial conditions
+-  *initial_conditions*: string or array of floats; 'microcanonical' for a microcanonical distribution, or an array of shape (*Ntraj*, 2*dimension*) containing the initial conditions to be integrated
 - *initial_J*: float; initial value of the total angular momentum (atomic units) used in *Method*='dissociation'
 - *EnergyPS*: float; initial value of the energy (atomic units) used in *Method*='poincaré'
 - *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical', 'lab' or 'rotated'] for the type of trajectories to be plotted and/or saved
