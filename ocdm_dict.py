@@ -4,7 +4,7 @@
 
 import numpy as xp
 
-Method = 'plot_potentials'
+Method = 'trajectories'
 
 dimension = 2
 
@@ -15,14 +15,14 @@ te = [5, 40, 5]
 
 Ntraj = 1
 r = [2.5, 10]
-initial_conditions = [3.7652253365079305, 9.165843999595593, 1.2566370614359172, 30.495901363953813]
+initial_conditions = [3.756, 9.179903850342878, 1.2566370614359172, 30.495901363953813]
 initial_J = 30
 EnergyPS = []
 
-type_traj = ['dissociated', 'spherical', 'rotated']
+type_traj = ['all', 'cartesian', 'rotated']
 dpi = 3000
 
-SaveData = False
+SaveData = True
 PlotResults = True
 Parallelization = (False, 3)
 
