@@ -15,7 +15,7 @@ te = [5, 40, 5]
 
 Ntraj = 1
 r = [2.5, 10]
-initial_conditions = [3.756, 9.179903850342878, 1.2566370614359172, 30.495901363953813]
+initial_conditions = [3.756, 1.2566370614359172, 9.179903850342878, 30.495901363953813]
 initial_J = 30
 EnergyPS = []
 
@@ -39,7 +39,7 @@ if Method == 'poincaré':
 dict_list = [{'Method': Method} for _ in xp.atleast_1d(E0)]
 if not isinstance(initial_conditions, str):
     initial_conditions = xp.asarray(initial_conditions)
-    Ntraj = len(initial_conditions.transpose()[0])
+    Ntraj = len(initial_conditions.flatten()) // (2*dimension)
 for dict, E in zip(dict_list, xp.atleast_1d(E0)):
     dict.update({
         'dim': dimension,
