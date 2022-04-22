@@ -4,27 +4,27 @@
 
 import numpy as xp
 
-Method = 'trajectories'
+Method = 'dissociation'
 
 dimension = 2
 
-E0 = 0.02
+E0 = xp.linspace(0, 0.07, 250)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5]
 
-Ntraj = 1
+Ntraj = 50000
 r = [2.5, 10]
-initial_conditions = [3.756, 1.2566370614359172, 9.179903850342878, 30.495901363953813]
+initial_conditions = 'microcanonical'
 initial_J = 30
 EnergyPS = []
 
 type_traj = ['all', 'cartesian', 'rotated']
 dpi = 3000
 
-SaveData = True
-PlotResults = True
-Parallelization = (False, 3)
+SaveData = False
+PlotResults = False
+Parallelization = (True, 50)
 
 darkmode = True
 

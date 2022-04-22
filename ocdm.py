@@ -163,11 +163,9 @@ class DiaMol:
 	def check_dissociation(self, y_):
 		if self.dim == 2:
 			r, phi, p_r, p_phi = xp.split(y_, 4)
-			H = (p_r**2 + p_phi**2 / r**2) / (2 * self.mu) + self.eps(r)
 		elif self.dim == 3:
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
-			H = (p_r**2 + p_theta**2 / r**2 + p_phi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r)
-		return (H > 0)
+		return xp.logical_or(p_phi > 395, r > 100)
 
 	def cart2sph(self, y_):
 		if self.dim == 2:
