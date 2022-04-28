@@ -82,8 +82,7 @@ def run_method(case):
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.show()
     elif case.Method in ['dissociation', 'trajectories']:
-        Energy0 = case.freqs[0] / 2 + case.freqs[1] * case.initial_J * (case.initial_J + 1) - case.De
-        y0 = case.initcond(case.Ntraj, Energy0)
+        y0 = case.initcond(case.Ntraj)
         t_eval = xp.linspace(0, case.te.sum(), case.dpi)
         if case.Method == 'dissociation':
             t_eval = xp.asarray([t_eval[0], t_eval[-1]])
@@ -164,14 +163,22 @@ def run_method(case):
             print('\033[33m          Warning: The frequency Omega is not constant \033[00m')
         Omega = case.Omega(0)
         def event_ps(t, y_):
-            return (y_[1] + xp.pi) % (2 * xp.pi) - xp.pi
+            if case.event == 'phi':
+                return (y_[1] + xp.pi) % (2 * xp.pi) - xp.pi
+            elif case.event == 'pr':
+                return y_[2]
         event_ps.direction = -1
-        pr_max = lambda r: xp.sqrt(2 * case.mu * (case.mu * r**2 * Omega**2 / 2 + case.E0**2 / 4 * case.al_para(r) - case.eps(r) + case.EnergyPS))
-        rand = xp.random.random((2, case.Ntraj))
         r = (case.r[1] - case.r[0]) * rand[0] + case.r[0]
-        p_r = pr_max(r) * (2 * rand[1] - 1)
-        p_phi = case.mu * r**2 * Omega + event_ps.direction * r * xp.sqrt(pr_max(r)**2 - p_r**2)
-        y0_ = xp.vstack((r, xp.zeros(case.Ntraj), p_r, p_phi))
+        if case.event == 'phi':
+            pr_max = lambda r: xp.sqrt(2 * case.mu * (case.mu * r**2 * Omega**2 / 2 + case.E0**2 / 4 * case.al_para(r) - case.eps(r) + case.Energy0))
+            rand = xp.random.random((2, case.Ntraj))
+            p_r = pr_max(r) * (2 * rand[1] - 1)
+            p_phi = case.mu * r**2 * Omega + event_ps.direction * r * xp.sqrt(pr_max(r)**2 - p_r**2)
+            y0_ = xp.vstack((r, xp.zeros(case.Ntraj), p_r, p_phi))
+        elif case.event == 'pr':
+            phi = 2 * xp.pi * xp.random.random(case.Ntraj) - xp.pi
+            p_r = xp.zeros(case.Ntraj)
+            y0_ = xp.vstack((r, phi, xp.zeros(case.Ntraj), p_phi))
         y_events = []
         start = time.time()
         for y0 in y0_.transpose():

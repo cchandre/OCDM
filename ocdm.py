@@ -135,30 +135,41 @@ class DiaMol:
 		elif self.envelope == 'trapez':
 			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te[2], 0))))
 
-	def initcond(self, N, Energy0):
+	def initcond(self, N):
 		if isinstance(self.initial_conditions, str):
 			if self.initial_conditions == 'microcanonical':
-				if -self.De < Energy0 < 0:
-					rH0 = [self.re - xp.log(1 + xp.sqrt(1 + Energy0 / self.De)) / self.gam, self.re - xp.log(1 - xp.sqrt(1 + Energy0 / self.De)) / self.gam]
-					if (self.r[1] > rH0[0]) and (rH0[1] > self.r[0]):
-						r0 = [max(self.r[0], rH0[0]), min(self.r[1], rH0[1])]
-						r = (r0[1] - r0[0]) * xp.random.random(N) + r0[0]
-						theta = xp.pi * xp.random.random((2, N))
-						phi = 2 * xp.pi * xp.random.random((2, N)) - xp.pi
-						P = xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)))
-						if self.dim == 2:
-							p_r = P * xp.cos(phi[1])
-							p_phi = P * xp.sin(phi[1]) * r
-							return xp.concatenate((r, phi[0], p_r, p_phi), axis=None)
-						elif self.dim == 3:
-							p_r = P * xp.cos(phi[1]) * xp.sin(theta[1])
-							p_theta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
-							p_phi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
-							return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
-				print('\033[33m          Warning: Empty energy surface \033[00m')
-				return []
+				r = self.generate_r(self.eps, self.Energy0, N, self.r)
+				theta = xp.pi * xp.random.random((2, N))
+				phi = 2 * xp.pi * xp.random.random((2, N)) - xp.pi
+				P = xp.sqrt(2 * self.mu * (self.Energy0 - self.eps(r)))
+				if self.dim == 2:
+					p_r = P * xp.cos(phi[1])
+					p_phi = P * xp.sin(phi[1]) * r
+					return xp.concatenate((r, phi[0], p_r, p_phi), axis=None)
+				elif self.dim == 3:
+					p_r = P * xp.cos(phi[1]) * xp.sin(theta[1])
+					p_theta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
+					p_phi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
+					return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
+			elif self.initial_conditions == 'microcanonical_J':
+				p0 = xp.sqrt(self.initial_J * (self.initial_J + 1))
+				Energy0 = self.freqs[0] / 2 + self.freqs[1] * p0**2 - self.De
+				phi = 2 * xp.pi * xp.random.random(N) - xp.pi
+				p_phi = p0 * xp.sign(2 * xp.ones(self.Ntraj) - 1)
+				func = lambda r: self.eps(r) + p0**2 / (2 * self.mu * r**2)
+				r = self.generate_r(func, Energy0, N, self.r)
+				p_r = xp.sign(2 * xp.ones(N) -1) * xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)) - p_phi**2 / r**2)
+				if self.dim == 2:
+					return xp.concatenate((r, phi, p_r, p_phi), axis=None)
+				elif self.dim ==3:
+					theta = xp.pi * xp.random.random(N)
+					p_theta = xp.zeros(N)
+					return xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
+		elif all([isinstance(item, float) or isinstance(item, int) for item in self.initial_conditions]):
+			return xp.asarray(self.initial_conditions).flatten('F')
 		else:
-			return self.initial_conditions.flatten('F')
+			print('\033[31m          Error: Wrong value for initial_conditions \033[00m')
+			exit()
 
 	def check_dissociation(self, y_):
 		if self.dim == 2:
@@ -220,6 +231,18 @@ class DiaMol:
 
 	def mod(self, y_):
 		return self.cart2sph(self.sph2cart(y_))
+
+	def generate_r(self, func, Energy0, N, r):
+		vec = xp.linspace(r[0], r[1], 2**12)
+		if Energy0 < func(vec).min():
+			print('\033[31m          Error: Empty energy surface \033[00m')
+			exit()
+		else:
+			vec = []
+			while len(vec) <= N:
+				vec_t = (r[1] - r[0]) * xp.random.random(N) + r[0]
+				vec = xp.hstack((vec, vec_t[func(vec_t)<=Energy0]))
+			return vec[:N]
 
 if __name__ == "__main__":
 	main()

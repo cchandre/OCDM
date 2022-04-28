@@ -15,11 +15,12 @@ te = [5, 40, 5]
 
 Ntraj = 50000
 r = [2.5, 10]
-initial_conditions = 'microcanonical'
+initial_conditions = 'microcanonical_J'
 initial_J = 30
-EnergyPS = []
+Energy0 = []
+EventPS = 'phi'
 
-type_traj = ['all', 'cartesian', 'rotated']
+type_traj = ['dissociated', 'cartesian', 'rotated']
 dpi = 3000
 
 SaveData = False
@@ -50,10 +51,11 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'r': r,
         'initial_conditions': initial_conditions,
         'initial_J': initial_J,
-        'EnergyPS': EnergyPS,
+        'Energy0': Energy0,
+        'event': EventPS,
         'type_traj': type_traj,
         'dpi': dpi,
-        'ode_solver': 'DOP853',
+        'ode_solver': 'RK45',
         'Tol': [1e-10, 1e-10],
         'SaveData': SaveData,
         'PlotResults': PlotResults,
