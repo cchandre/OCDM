@@ -11,7 +11,7 @@ dimension = 2
 E0 = xp.linspace(0, 0.07, 250)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
-te = [5, 40, 5]
+te = [5, 40, 5, 5]
 
 Ntraj = 50000
 r = [2.5, 10]

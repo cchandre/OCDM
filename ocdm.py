@@ -155,10 +155,10 @@ class DiaMol:
 				p0 = xp.sqrt(self.initial_J * (self.initial_J + 1))
 				Energy0 = self.freqs[0] / 2 + self.freqs[1] * p0**2 - self.De
 				phi = 2 * xp.pi * xp.random.random(N) - xp.pi
-				p_phi = p0 * xp.sign(2 * xp.ones(self.Ntraj) - 1)
+				p_phi = p0 * xp.ones(N)
 				func = lambda r: self.eps(r) + p0**2 / (2 * self.mu * r**2)
 				r = self.generate_r(func, Energy0, N, self.r)
-				p_r = xp.sign(2 * xp.ones(N) -1) * xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)) - p_phi**2 / r**2)
+				p_r = xp.sign(2 * xp.random.random(N) - 1) * xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)) - p_phi**2 / r**2)
 				if self.dim == 2:
 					return xp.concatenate((r, phi, p_r, p_phi), axis=None)
 				elif self.dim ==3:
@@ -176,7 +176,7 @@ class DiaMol:
 			r, phi, p_r, p_phi = xp.split(y_, 4)
 		elif self.dim == 3:
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
-		return xp.logical_or(p_phi > 395, r > 100)
+		return (r > 100)
 
 	def cart2sph(self, y_):
 		if self.dim == 2:
