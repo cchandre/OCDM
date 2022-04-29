@@ -25,7 +25,7 @@ ___
 - *E0*: float or array of floats; amplitude(s) *E*<sub>0</sub> of the electric field, *E*(*t*) = *E*<sub>0 </sub>*f*(*t*) [<b>e<sub>*x*</sub></b> cos&Phi;(*t*) + <b>e<sub>*y*</sub></b> sin&Phi;(*t*)] cos&omega;*t*, considered in the computation (atomic units)
 - *Omega*: lambda function; values of the frequency of rotation of the polarisation axis, &Omega;=&Phi;'(*t*), as a function of time (atomic units)
 - *envelope*: string ('const', 'sinus', 'trapez'); envelope function *f*(*t*) of the laser field
-- *te*: array of 3 floats; duration of ramp-up, plateau and ramp-down (in picoseconds)
+- *te*: array of 3 or 4 floats; duration of ramp-up, plateau, ramp-down and (optional) after pulse (in picoseconds)
 - *Ntraj*: integer; number of trajectories to be integrated
 -  *r*: array of two floats; minimum and maximum values of *r* for the display of potentials, and range of *r* (atomic units) for the selection of initial conditions
 -  *initial_conditions*: string or array of floats; 'microcanonical' for a microcanonical distribution with energy *Energy0* or 'microcanonical_J' for a microcanonical distribution with *initial_J*, or an array of shape (*Ntraj*, 2*dimension*) containing the initial conditions to be integrated
