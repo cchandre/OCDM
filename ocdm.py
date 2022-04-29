@@ -234,7 +234,7 @@ class DiaMol:
 
 	def generate_r(self, func, Energy0, N, r):
 		vec = xp.linspace(r[0], r[1], 2**12)
-		if Energy0 < func(vec).min():
+		if func(vec).min() > Energy0:
 			print('\033[31m          Error: Empty energy surface \033[00m')
 			exit()
 		else:

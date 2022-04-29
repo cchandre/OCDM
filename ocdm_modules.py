@@ -168,17 +168,38 @@ def run_method(case):
             elif case.event == 'pr':
                 return y_[2]
         event_ps.direction = -1
-        r = (case.r[1] - case.r[0]) * rand[0] + case.r[0]
         if case.event == 'phi':
-            pr_max = lambda r: xp.sqrt(2 * case.mu * (case.mu * r**2 * Omega**2 / 2 + case.E0**2 / 4 * case.al_para(r) - case.eps(r) + case.Energy0))
-            rand = xp.random.random((2, case.Ntraj))
-            p_r = pr_max(r) * (2 * rand[1] - 1)
-            p_phi = case.mu * r**2 * Omega + event_ps.direction * r * xp.sqrt(pr_max(r)**2 - p_r**2)
-            y0_ = xp.vstack((r, xp.zeros(case.Ntraj), p_r, p_phi))
+            r = xp.linspace(case.r[0], case.r[1], 2**10)
+            if case.Energy0 < case.ZVS(r, xp.pi/2, 0, 0).min():
+                print('\033[31m          Error: Empty Poincaré section \033[00m')
+                exit()
+            else:
+                pr_max = lambda r: xp.sqrt(2 * case.mu * (case.Energy0 - case.ZVS(r, 0, xp.pi/2, 0)))
+                rand = xp.random.random((2, case.Ntraj))
+                r = (case.r[1] - case.r[0]) * rand[0] + case.r[0]
+                p_r = pr_max(r) * (2 * rand[1] - 1)
+                p_phi = case.mu * r**2 * Omega + event_ps.direction * r * xp.sqrt(pr_max(r)**2 - p_r**2)
+                y0_ = xp.vstack((r, xp.zeros(case.Ntraj), p_r, p_phi))
         elif case.event == 'pr':
-            phi = 2 * xp.pi * xp.random.random(case.Ntraj) - xp.pi
-            p_r = xp.zeros(case.Ntraj)
-            y0_ = xp.vstack((r, phi, xp.zeros(case.Ntraj), p_phi))
+            r = xp.linspace(case.r[0], case.r[1], 2**10)
+            phi = xp.linspace(0, 2 * xp.pi, 2**10)
+            rp = xp.meshgrid(r, phi)
+            if case.Energy0 < case.ZVS(rp[0], xp.pi/2, rp[1], 0).min():
+                print('\033[31m          Error: Empty Poincaré section \033[00m')
+                exit()
+            else:
+                r, phi, p_phi = [], [], []
+                while len(r) <= case.Ntraj:
+                    rand = xp.random.random((2, case.Ntraj))
+                    r_ = (case.r[1] - case.r[0]) * rand[0] + case.r[0]
+                    phi_ = 2 * xp.pi * rand[1] - xp.pi
+                    rp = xp.meshgrid(r_, phi_)
+                    ZVS = case.ZVS(rp[0], xp.pi / 2, rp[1], 0)
+                    r_, phi_, ZVS_ = r_[ZVS<=case.Energy0], phi_[ZVS<=case.Energy0], ZVS[ZVS<=case.Energy0]
+                    r, phi = xp.hstack((r, r_)), xp.hstack((phi, phi_))
+                    p_phi = case.mu * r_**2 * Omega + event_ps.direction * r_ * xp.sqrt(2 * case.mu * (case.Energy0 - ZVS_))
+                r, phi, p_phi = r[:case.Ntraj], phi[:case.Ntraj], p_phi[:case.Ntraj]
+                y0_ = xp.vstack((r, phi, xp.zeros(case.Ntraj), p_phi))
         y_events = []
         start = time.time()
         for y0 in y0_.transpose():
@@ -191,13 +212,21 @@ def run_method(case):
         save_data(case, y_events, filestr)
         if case.PlotResults:
             fig, ax = plt.subplots(1, 1)
-            r = xp.linspace(case.r[0], case.r[1], case.dpi)
-            ax.plot(r, pr_max(r), 'r')
-            ax.plot(r, -pr_max(r), 'r')
-            ax.plot(y_events[1:, 0], y_events[1:, 2], cs[1] + '.')
-            ax.set_xlim(case.r)
-            ax.set_xlabel(r'$r$')
-            ax.set_ylabel(r'$p_r$')
+            if case.event == 'phi':
+                r = xp.linspace(case.r[0], case.r[1], case.dpi)
+                ax.plot(r, pr_max(r), 'r')
+                ax.plot(r, -pr_max(r), 'r')
+                ax.plot(y_events[1:, 0], y_events[1:, 2], cs[1] + '.')
+                ax.set_xlim(case.r)
+                ax.set_xlabel(r'$r$')
+                ax.set_ylabel(r'$p_r$')
+            elif case.event == 'pr':
+                ax.plot((y_events[1:, 1] + xp.pi) %(2 * xp.pi) - xp.pi, y_events[1:, 3], cs[1] + '.')
+                ax.set_xlim([-xp.pi, xp.pi])
+                ax.set_xticks([-xp.pi, -xp.pi / 2, 0, xp.pi / 2, xp.pi])
+                ax.set_xlabel(r'$\phi$')
+                ax.set_ylabel(r'$p_\phi$')
+                ax.set_xticklabels([r'$-\pi$', r'$-\pi/2$', '0', r'$\pi/2$', r'$\pi$'])
             plt.show()
 
 def save_data(case, data, filestr, info=[]):
