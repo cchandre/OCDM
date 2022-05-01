@@ -1,5 +1,5 @@
 ###################################################################################################
-##            Dictionary of parameters: https://github.com/cchandre/OCDM                         ##
+##               Dictionary of parameters: https://github.com/cchandre/OCDM                      ##
 ###################################################################################################
 
 import numpy as xp
@@ -31,7 +31,7 @@ Parallelization = (False, 50)
 darkmode = True
 
 ###################################################################################################
-##                             DO NOT EDIT BELOW                                                 ##
+##                              DO NOT EDIT BELOW                                                ##
 ###################################################################################################
 if Method == 'poincaré':
     dimension = 2
@@ -56,10 +56,10 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'event': EventPS,
         'type_traj': type_traj,
         'dpi': dpi,
-        'ode_solver': 'RK45',
-        'Tol': [1e-10, 1e-10],
         'SaveData': SaveData,
         'PlotResults': PlotResults,
-        'contour_levels': 50,
         'darkmode': darkmode})
+    dict.setdefault('contour_levels', 50)
+    dict.setdefault('ode_solver', 'RK45')
+    dict.setdefault('Tol', [1e-10, 1e-10])
 ###################################################################################################
