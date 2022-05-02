@@ -4,29 +4,28 @@
 
 import numpy as xp
 
-Method = 'poincaré'
+Method = 'dissociation'
 
 dimension = 2
 
-E0 = 0.02
-#Omega = lambda t: 3e-10 * t
-Omega = lambda t: 3e-5
+E0 = xp.linspace(0, 0.07, 250)
+Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
-te = [5, 400, 5, 5]
+te = [5, 40, 5, 5]
 
-Ntraj = 50
+Ntraj = 100000
 r = [2.5, 10]
 initial_conditions = 'microcanonical_J'
 initial_J = 30
-Energy0 = -0.01
+Energy0 = []
 EventPS = 'phi'
 
 type_traj = ['dissociated', 'cartesian', 'rotated']
 dpi = 3000
 
 SaveData = False
-PlotResults = True
-Parallelization = (False, 50)
+PlotResults = False
+Parallelization = (True, 50)
 
 darkmode = True
 
