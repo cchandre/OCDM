@@ -6,10 +6,8 @@ function read_DiaMol_dissociation
 
 [filename, path] = uigetfile('*.txt');
 data = importdata([path filename]);  
-t = data.data(:,1);
-proba = data.data(:,2);
-[t, index] = sort(t);
-proba = proba(index);
+[t, index] = sort(data.data(:,1));
+proba = data.data(index,2);
 figure
 plot(t,proba,'LineWidth',3);
 set(gca,'box','on','FontSize',20,'LineWidth',2)
