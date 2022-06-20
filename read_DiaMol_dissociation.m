@@ -8,8 +8,7 @@ function read_DiaMol_dissociation
 data = importdata([path filename]);  
 [t, index] = sort(data.data(:,1));
 proba = data.data(index,2);
-figure
-plot(t,proba,'LineWidth',3);
+figure, plot(t,proba,'LineWidth',3)
 set(gca,'box','on','FontSize',20,'LineWidth',2)
 xlabel('$t$ (ps)','interpreter','latex','FontSize',26)
 ylabel('probability','FontSize',26)
