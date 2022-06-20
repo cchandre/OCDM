@@ -8,7 +8,7 @@ Method = 'dissociation'
 
 dimension = 2
 
-E0 = xp.linspace(0, 0.07, 250)
+E0 = xp.linspace(0.01, 0.03, 250)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5, 5]
@@ -46,7 +46,7 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'dim': dimension,
         'E0': E,
         'envelope': envelope,
-        'te': xp.asarray(te) / 2.42e-5,
+        'te': te,
         'Ntraj': Ntraj,
         'r': r,
         'initial_conditions': initial_conditions,

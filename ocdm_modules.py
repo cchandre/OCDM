@@ -83,7 +83,7 @@ def run_method(case):
         plt.show()
     elif case.Method in ['dissociation', 'trajectories']:
         y0 = case.initcond(case.Ntraj)
-        t_eval = xp.linspace(0, case.te.sum(), case.dpi)
+        t_eval = xp.linspace(0, case.te_ps.sum(), case.dpi)
         if case.Method == 'dissociation':
             t_eval = xp.asarray([t_eval[0], t_eval[-1]])
         if xp.any(y0):
@@ -111,6 +111,10 @@ def run_method(case):
                 vec_data = [case.E0, proba]
                 file = open(type(case).__name__ + '_' + case.Method + '.txt', 'a')
                 if os.path.getsize(file.name) == 0:
+                    t = sp.symbols('t')
+                    beta = sp.diff(case.Omega(t), t)
+                    file.writelines('%   J = {}       beta = {}    dim = {}\n'.format(case.initial_J, beta, case.dim))
+                    file.writelines('%   env = {}     {} \n'.format(case.envelope, case.te))
                     file.writelines('%   E0           proba \n')
                 file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
                 file.close()
@@ -120,7 +124,7 @@ def run_method(case):
                     axs = fig.add_gridspec(2, hspace=0.2).subplots(sharex=True)
                 elif case.type_traj[1] == 'spherical':
                     axs = fig.add_gridspec(3, hspace=0.2).subplots(sharex=True)
-                te = xp.cumsum(case.te) * 2.42e-5
+                te = xp.cumsum(xp.asarray(case.te))
                 for ax in axs:
                     for t in te:
                         ax.axvline(x=t, lw=1, color=cs[1])
@@ -203,7 +207,7 @@ def run_method(case):
         y_events = []
         start = time.time()
         for y0 in y0_.transpose():
-            sol = solve_ivp(case.eqn_H, (0, case.te.sum()), y0, events=event_ps, method=case.ode_solver, atol=case.Tol[0], rtol=case.Tol[1])
+            sol = solve_ivp(case.eqn_H, (0, case.te_ps.sum()), y0, events=event_ps, method=case.ode_solver, atol=case.Tol[0], rtol=case.Tol[1])
             if xp.any(y_events):
                 y_events = xp.vstack((y_events, sol.y_events[0]))
             else:
