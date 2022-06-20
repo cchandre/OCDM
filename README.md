@@ -7,6 +7,8 @@ Optical Centrifuge for Diatomic Molecules (OCDM) - codes for the chlorine molecu
 
 - [`ocdm_modules.py`](https://github.com/cchandre/OCDM/blob/main/ocdm_modules.py): contains the methods to integrate the OCDM dynamics
 
+- [`read_DiaMol_dissocation.m`](https://github.com/cchandre/OCDM/blob/main/read_DiaMol_dissociation.m): MATLAB script to produce the dissociation probability figure from the output files `DiaMol_dissociation.txt` 
+
 Once [`ocdm_dict.py`](https://github.com/cchandre/OCDM/blob/main/ocdm_dict.py) has been edited with the relevant parameters, run the file as 
 ```sh
 python3 ocdm.py
