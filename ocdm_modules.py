@@ -175,8 +175,7 @@ def run_method(case):
         if case.event == 'phi':
             r = xp.linspace(case.r[0], case.r[1], 2**10)
             if case.Energy0 < case.ZVS(r, xp.pi/2, 0, 0).min():
-                print('\033[31m          Error: Empty Poincaré section \033[00m')
-                exit()
+                raise ValueError('Empty Poincaré section')
             else:
                 pr_max = lambda r: xp.sqrt(2 * case.mu * (case.Energy0 - case.ZVS(r, 0, xp.pi/2, 0)))
                 rand = xp.random.random((2, case.Ntraj))
@@ -189,8 +188,7 @@ def run_method(case):
             phi = xp.linspace(0, 2 * xp.pi, 2**10)
             rp = xp.meshgrid(r, phi)
             if case.Energy0 < case.ZVS(rp[0], xp.pi/2, rp[1], 0).min():
-                print('\033[31m          Error: Empty Poincaré section \033[00m')
-                exit()
+                raise ValueError('Empty Poincaré section')
             else:
                 r, phi, p_phi = [], [], []
                 while len(r) <= case.Ntraj:

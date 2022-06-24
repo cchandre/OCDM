@@ -117,14 +117,19 @@ class DiaMol:
 			dp_phi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
 			return xp.concatenate((dr, dtheta, dphi, dp_r, dp_theta, dp_phi), axis=None)
 
-	def energy(self, t, y_):
-		Eeff = self.E0**2 * self.env(t)**2 / 4
+	def energy(self, t, y_, field=True):
+		if field:
+			Eeff = self.E0**2 * self.env(t)**2 / 4
 		if self.dim == 2:
 			r, phi, p_r, p_phi = xp.split(y_, 4)
-			H = (p_r**2 + p_phi**2 / r**2) / (2 * self.mu) + self.eps(r) - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
+			H = (p_r**2 + p_phi**2 / r**2) / (2 * self.mu) + self.eps(r)
+			if field:
+				H += - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
 		elif self.dim == 3:
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
-			H = (p_r**2 + p_theta**2 / r**2 + p_phi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r) - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
+			H = (p_r**2 + p_theta**2 / r**2 + p_phi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r)
+			if field:
+				H += - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
 		return H
 
 	def env(self, t):
@@ -169,15 +174,14 @@ class DiaMol:
 		elif all([isinstance(item, float) or isinstance(item, int) for item in self.initial_conditions]):
 			return xp.asarray(self.initial_conditions).flatten('F')
 		else:
-			print('\033[31m          Error: Wrong value for initial_conditions \033[00m')
-			exit()
+			raise ValueError('Wrong value for initial_conditions')
 
 	def check_dissociation(self, y_):
 		if self.dim == 2:
 			r, phi, p_r, p_phi = xp.split(y_, 4)
 		elif self.dim == 3:
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
-		return (r > 100)
+		return (r > 10)
 
 	def cart2sph(self, y_):
 		if self.dim == 2:
@@ -236,8 +240,7 @@ class DiaMol:
 	def generate_r(self, func, Energy0, N, r):
 		vec = xp.linspace(r[0], r[1], 2**12)
 		if func(vec).min() > Energy0:
-			print('\033[31m          Error: Empty energy surface \033[00m')
-			exit()
+			raise ValueError('Empty energy surface')
 		else:
 			vec = []
 			while len(vec) <= N:
