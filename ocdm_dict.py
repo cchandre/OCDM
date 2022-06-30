@@ -8,12 +8,12 @@ Method = 'dissociation'
 
 dimension = 2
 
-E0 = xp.linspace(0.01, 0.03, 100)
+E0 = xp.linspace(0.01, 0.035, 100)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5, 20]
 
-Ntraj = 10000
+Ntraj = 4000
 r = [2.5, 10]
 initial_conditions = 'microcanonical_J'
 initial_J = 30

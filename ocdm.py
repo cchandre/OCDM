@@ -178,10 +178,20 @@ class DiaMol:
 
 	def check_dissociation(self, y_):
 		if self.dim == 2:
-			r, phi, p_r, p_phi = xp.split(y_, 4)
+			dissociated = xp.zeros(len(y_) // 4, dtype=bool)
+			for _, (r, phi, p_r, p_phi) in enumerate(xp.split(y_, 4)):
+				E = self.energy(0, [r, phi, p_r, p_phi], field=False)
+				if xp.abs(p_phi) < 394.7:
+					r_ = root_scalar(lambda r: self.d_eps(r) * r**3 - p_phi**2 / self.mu, bracket=[3.5, 5], xtol=1e-10, rtol=1e-10, method='brentq').root
+					E_ = r_ * self.d_eps(r_) / 2 + self.eps(r)
+					if r > r_ or E > E_:
+						dissociated[_] = True
+				else:
+					dissociated[_] = True
+			return dissociated
 		elif self.dim == 3:
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
-		return (r > 10)
+			return (r > 20)
 
 	def cart2sph(self, y_):
 		if self.dim == 2:
