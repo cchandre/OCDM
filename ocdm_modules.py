@@ -113,7 +113,7 @@ def run_method(case):
                 if os.path.getsize(file.name) == 0:
                     t = sp.symbols('t')
                     beta = sp.diff(case.Omega(t), t)
-                    file.writelines('%   J = {}       beta = {}    dim = {}\n'.format(case.initial_J, beta, case.dim))
+                    file.writelines('%   initial = {}       beta = {}    dim = {}\n'.format(case.initial_conditions, beta, case.dim))
                     file.writelines('%   env = {}     {} \n'.format(case.envelope, case.te))
                     file.writelines('%   E0           proba \n')
                 file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
@@ -174,10 +174,10 @@ def run_method(case):
         event_ps.direction = -1
         if case.event == 'phi':
             r = xp.linspace(case.r[0], case.r[1], 2**10)
-            if case.Energy0 < case.ZVS(r, xp.pi/2, 0, 0).min():
+            if case.EnergyPS < case.ZVS(r, xp.pi/2, 0, 0).min():
                 raise ValueError('Empty Poincaré section')
             else:
-                pr_max = lambda r: xp.sqrt(2 * case.mu * (case.Energy0 - case.ZVS(r, 0, xp.pi/2, 0)))
+                pr_max = lambda r: xp.sqrt(2 * case.mu * (case.EnergyPS - case.ZVS(r, 0, xp.pi/2, 0)))
                 rand = xp.random.random((2, case.Ntraj))
                 r = (case.r[1] - case.r[0]) * rand[0] + case.r[0]
                 p_r = pr_max(r) * (2 * rand[1] - 1)
@@ -187,7 +187,7 @@ def run_method(case):
             r = xp.linspace(case.r[0], case.r[1], 2**10)
             phi = xp.linspace(0, 2 * xp.pi, 2**10)
             rp = xp.meshgrid(r, phi)
-            if case.Energy0 < case.ZVS(rp[0], xp.pi/2, rp[1], 0).min():
+            if case.EnergyPS < case.ZVS(rp[0], xp.pi/2, rp[1], 0).min():
                 raise ValueError('Empty Poincaré section')
             else:
                 r, phi, p_phi = [], [], []
@@ -197,9 +197,9 @@ def run_method(case):
                     phi_ = 2 * xp.pi * rand[1] - xp.pi
                     rp = xp.meshgrid(r_, phi_)
                     ZVS = case.ZVS(rp[0], xp.pi / 2, rp[1], 0)
-                    r_, phi_, ZVS_ = r_[ZVS<=case.Energy0], phi_[ZVS<=case.Energy0], ZVS[ZVS<=case.Energy0]
+                    r_, phi_, ZVS_ = r_[ZVS<=case.EnergyPS], phi_[ZVS<=case.EnergyPS], ZVS[ZVS<=case.EnergyPS]
                     r, phi = xp.hstack((r, r_)), xp.hstack((phi, phi_))
-                    p_phi = case.mu * r_**2 * Omega + event_ps.direction * r_ * xp.sqrt(2 * case.mu * (case.Energy0 - ZVS_))
+                    p_phi = case.mu * r_**2 * Omega + event_ps.direction * r_ * xp.sqrt(2 * case.mu * (case.EnergyPS - ZVS_))
                 r, phi, p_phi = r[:case.Ntraj], phi[:case.Ntraj], p_phi[:case.Ntraj]
                 y0_ = xp.vstack((r, phi, xp.zeros(case.Ntraj), p_phi))
         y_events = []

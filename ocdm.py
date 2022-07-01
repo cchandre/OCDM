@@ -144,12 +144,12 @@ class DiaMol:
 			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te_ps[2], 0))))
 
 	def initcond(self, N):
-		if isinstance(self.initial_conditions, str):
-			if self.initial_conditions == 'microcanonical':
-				r = self.generate_r(self.eps, self.Energy0, N, self.r)
+		if isinstance(self.initial_conditions[0], str):
+			if self.initial_conditions[0] == 'microcanonical':
+				r = self.generate_r(self.eps, self.initial_conditions[1], N, self.r)
 				theta = xp.pi * xp.random.random((2, N))
 				phi = 2 * xp.pi * xp.random.random((2, N)) - xp.pi
-				P = xp.sqrt(2 * self.mu * (self.Energy0 - self.eps(r)))
+				P = xp.sqrt(2 * self.mu * (self.initial_conditions[1] - self.eps(r)))
 				if self.dim == 2:
 					p_r = P * xp.cos(phi[1])
 					p_phi = P * xp.sin(phi[1]) * r
@@ -159,9 +159,9 @@ class DiaMol:
 					p_theta = P * xp.sin(phi[1]) * xp.sin(theta[1]) * r
 					p_phi = P * xp.cos(theta[1]) * r * xp.sin(theta[0])
 					return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
-			elif self.initial_conditions == 'microcanonical_J':
-				p0 = xp.sqrt(self.initial_J * (self.initial_J + 1))
-				Energy0 = self.freqs[0] / 2 + self.freqs[1] * p0**2 - self.De
+			elif self.initial_conditions[0] == 'microcanonical_J':
+				p0 = xp.sqrt(self.initial_conditions[2] * (self.initial_conditions[2] + 1))
+				Energy0 = self.freqs[0] * (self.initial_conditions[1] + 1 / 2) + self.freqs[1] * p0**2 - self.De
 				phi = 2 * xp.pi * xp.random.random(N) - xp.pi
 				p_phi = p0 * xp.ones(N)
 				func = lambda r: self.eps(r) + p0**2 / (2 * self.mu * r**2)

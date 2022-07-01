@@ -8,16 +8,15 @@ Method = 'dissociation'
 
 dimension = 2
 
-E0 = xp.linspace(0.01, 0.035, 100)
+E0 = xp.linspace(0.01, 0.035, 50)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
-te = [5, 40, 5, 20]
+te = [5, 40, 5, 5]
 
 Ntraj = 4000
 r = [2.5, 10]
-initial_conditions = 'microcanonical_J'
-initial_J = 30
-Energy0 = []
+initial_conditions = ['microcanonical_J', 0, 30]
+EnergyPS = []
 EventPS = 'phi'
 
 type_traj = ['dissociated', 'cartesian', 'rotated']
@@ -50,8 +49,7 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'Ntraj': Ntraj,
         'r': r,
         'initial_conditions': initial_conditions,
-        'initial_J': initial_J,
-        'Energy0': Energy0,
+        'EnergyPS': EnergyPS,
         'event': EventPS,
         'type_traj': type_traj,
         'dpi': dpi,
