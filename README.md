@@ -27,7 +27,6 @@ ___
    - 'dissociation': computes the dissociation probability as a function of the amplitude *E0*
    - 'trajectories': computes and displays the trajectories according to *type_traj*
    - 'poincaré'; Poincaré section is *&phi;*=0 (mod 2 &pi;) with *&phi;'*<0 in the plane (*r*,*p*<sub>*r*</sub>) if *EventPS*='phi', and *p<sub>*r*</sub> =0 with *p<sub>*r*</sub>'<0 in the plane (*&phi;*,*p*<sub>*&phi;*</sub>) if *EventPS*='phi'
-####
 - *dimension*: 2 or 3; dimension of the computation
 - *E0*: float or array of floats; amplitude(s) *E*<sub>0</sub> of the electric field, *E*(*t*) = *E*<sub>0 </sub>*f*(*t*) [<b>e<sub>*x*</sub></b> cos&Phi;(*t*) + <b>e<sub>*y*</sub></b> sin&Phi;(*t*)] cos&omega;*t*, considered in the computation (atomic units)
 - *Omega*: lambda function; values of the frequency of rotation of the polarisation axis, &Omega;=&Phi;'(*t*), as a function of time (atomic units)
