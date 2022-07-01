@@ -21,7 +21,12 @@ The list of Python packages and their version are specified in [`requirements.tx
 ___
 ##  Parameter dictionary
 
-- *Method*: string; 'plot_potentials', 'plot_ZVS', 'dissociation', 'trajectories', 'poincaré'; NB: The Poincaré section is *&phi;*=0 (mod 2 &pi;) with *&phi;'*<0 in the plane (*r*,*p*<sub>*r*</sub>)
+- *Method*: string
+   - 'plot_potentials': plot the potential &epsilon;(*r*) and polarizabilities &alpha;(*r*)
+   - 'plot_ZVS': plot zero velocity functions
+   - 'dissociation': computes the dissociation probability as a function of the amplitude *E0*
+   - 'trajectories': computes and displays the trajectories according to *type_traj*
+   - 'poincaré'; Poincaré section is *&phi;*=0 (mod 2 &pi;) with *&phi;'*<0 in the plane (*r*,*p*<sub>*r*</sub>) if *EventPS*='phi', and *p<sub>*r*</sub> =0 with *p<sub>*r*</sub>'<0 in the plane (*&phi;*,*p*<sub>*&phi;*</sub>) if *EventPS*='phi'
 ####
 - *dimension*: 2 or 3; dimension of the computation
 - *E0*: float or array of floats; amplitude(s) *E*<sub>0</sub> of the electric field, *E*(*t*) = *E*<sub>0 </sub>*f*(*t*) [<b>e<sub>*x*</sub></b> cos&Phi;(*t*) + <b>e<sub>*y*</sub></b> sin&Phi;(*t*)] cos&omega;*t*, considered in the computation (atomic units)
@@ -35,6 +40,7 @@ ___
    - ['microcanonical_J', *n*, *J*] for a microcanonical distribution with initial energy *E*<sub>0</sub> = &omega;<sub>e</sub> (*n*+1/2) + *B*<sub>e</sub> *J*(*J*+1)-*D*<sub>e</sub>
    - array of shape (*Ntraj*, 2*dimension*) containing the initial conditions to be integrated
 - *EnergyPS*: float; initial value of the energy (atomic units) used in *Method*='poincaré'
+- *EventPS*: string; 'phi' or 'pr'; choice of Poincaré section; Poincaré section is *&phi;*=0 (mod 2 &pi;) with *&phi;'*<0 in the plane (*r*,*p*<sub>*r*</sub>) if *EventPS*='phi', and *p<sub>*r*</sub> =0 with *p<sub>*r*</sub>'<0 in the plane (*&phi;*,*p*<sub>*&phi;*</sub>) if *EventPS*='phi'
 - *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical', 'lab' or 'rotated'] for the type of trajectories to be plotted and/or saved
 - *dpi*: integer; dpi value for the figures 
 ####
