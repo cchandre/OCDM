@@ -180,12 +180,12 @@ class DiaMol:
 
 	def check_dissociation(self, y_):
 		if self.dim == 2:
-			dissociated = xp.zeros(len(y_) // 4, dtype=bool)
+			dissociated = xp.zeros(len(y_)//4, dtype=bool)
 			for _, (r, phi, p_r, p_phi) in enumerate(zip(*xp.split(y_, 4))):
 				if xp.abs(p_phi) < self.p_phi_ion:
 					rs = root_scalar(lambda r_: self.d_eps(r_) * r_**3 - p_phi**2 / self.mu, bracket=[3.5, 5], xtol=1e-10, rtol=1e-10, method='brentq').root
 					Es = rs * self.d_eps(rs) / 2 + self.eps(rs)
-					if r > rs or self.energy(0, [r, phi, p_r, p_phi], field=False) > Es:
+					if r > rs or self.energy(0, [r, phi, p_r, p_phi], field=False)[0] > Es:
 						dissociated[_] = True
 				else:
 					dissociated[_] = True
