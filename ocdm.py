@@ -123,12 +123,18 @@ class DiaMol:
 		if field:
 			Eeff = self.E0**2 * self.env(t)**2 / 4
 		if self.dim == 2:
-			r, phi, p_r, p_phi = xp.split(y_, 4)
+			if len(y_) > 2 * self.dim:
+				r, phi, p_r, p_phi = xp.split(y_, 4)
+			else:
+				r, phi, p_r, p_phi = y_
 			H = (p_r**2 + p_phi**2 / r**2) / (2 * self.mu) + self.eps(r)
 			if field:
 				H += - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
 		elif self.dim == 3:
-			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
+			if len(y_) > 2 * self.dim:
+				r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
+			else:
+				r, theta, phi, p_r, p_theta, p_phi = y_
 			H = (p_r**2 + p_theta**2 / r**2 + p_phi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r)
 			if field:
 				H += - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
@@ -185,7 +191,7 @@ class DiaMol:
 				if xp.abs(p_phi) < self.p_phi_ion:
 					rs = root_scalar(lambda r_: self.d_eps(r_) * r_**3 - p_phi**2 / self.mu, bracket=[3.5, 4.9], xtol=1e-10, rtol=1e-10, method='brentq').root
 					Es = rs * self.d_eps(rs) / 2 + self.eps(rs)
-					if r > rs or self.energy(0, [r, phi, p_r, p_phi], field=False)[0] > Es:
+					if r > rs or self.energy(0, [r, phi, p_r, p_phi], field=False) > Es:
 						dissociated[_] = True
 				else:
 					dissociated[_] = True
