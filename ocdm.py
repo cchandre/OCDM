@@ -79,7 +79,7 @@ class DiaMol:
 		d_eps = sp.diff(eps, r)
 		self.eps = sp.lambdify(r, eps)
 		self.d_eps = sp.lambdify(r, d_eps)
-		self.p_phi_ion = xp.floor(xp.sqrt(-self.mu * fmin(lambda r: -r**3 * self.d_eps(r), 5, full_output=True, disp=False, xtol=1e-10, ftol=1e-10)[1]))
+		self.p_phi_ion = xp.floor(xp.sqrt(-self.mu * fmin(lambda r: -r**3 * self.d_eps(r), 5, full_output=True, disp=False, xtol=1e-10, ftol=1e-10)[1])) - 1
 		poly = lambda r, a: sum(c * r**k for k, c in enumerate(a))
 		deriv = lambda fun: sp.lambdify(r, sp.diff(fun, r))
 		para_s, perp_s = poly(r - self.re, a_s), poly(r - self.re, b_s)
@@ -189,7 +189,7 @@ class DiaMol:
 			dissociated = xp.zeros(len(y_)//4, dtype=bool)
 			for _, (r, phi, p_r, p_phi) in enumerate(zip(*xp.split(y_, 4))):
 				if xp.abs(p_phi) < self.p_phi_ion:
-					rs = root_scalar(lambda r_: self.d_eps(r_) * r_**3 - p_phi**2 / self.mu, bracket=[3.5, 4.9], xtol=1e-10, rtol=1e-10, method='brentq').root
+					rs = root_scalar(lambda r_: self.d_eps(r_) * r_**3 - p_phi**2 / self.mu, bracket=[5, 50], xtol=1e-10, rtol=1e-10, method='brentq').root
 					Es = rs * self.d_eps(rs) / 2 + self.eps(rs)
 					if r > rs or self.energy(0, [r, phi, p_r, p_phi], field=False) > Es:
 						dissociated[_] = True
