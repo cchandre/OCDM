@@ -63,7 +63,7 @@ class DiaMol:
 		self.Omega = lambda t: Omega(t)
 		t = sp.symbols('t')
 		self.Phi = sp.lambdify(t, sp.integrate(self.Omega(t), t))
-		self.te_ps = xp.asarray(self.te) / 2.42e-5
+		self.te_ps = xp.asarray(self.te) / 2.418884254e-5
 		a_s = [42.13, 15.4, 5.4, -5.25]
 		a_m = [-1599.0948228665286, 1064.701691434201, -262.7958617988855, 31.287242627165202, -1.8164825476900417, 0.04141328363593082]
 		r_a = [5, 10]
@@ -71,7 +71,7 @@ class DiaMol:
 		b_m = [68.28948313113857, -56.39145030911223, 25.523842390023567, -5.33917063891859, 0.5409284377558191, -0.02155141584655734]
 		r_b = [3, 6]
 		self.re, self.De, self.gam = 3.756, 0.0915, 1.0755
-		self.freqs = [2.5502e-3, 1.1098e-6]
+		self.we, self.Be = 2.5502e-3, 1.1098e-6
 		al_Cl, al_Cl2 = 15.5421, 2 * 15.5421
 		self.mu = 32548.53
 		r = sp.Symbol('r')
@@ -167,10 +167,10 @@ class DiaMol:
 					return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
 			elif self.initial_conditions[0] == 'microcanonical_J':
 				p0 = xp.sqrt(self.initial_conditions[2] * (self.initial_conditions[2] + 1))
-				Energy0 = self.freqs[0] * (self.initial_conditions[1] + 1 / 2) + self.freqs[1] * p0**2 - self.De
+				Energy0 = self.we * (self.initial_conditions[1] + 0.5) + self.Be * p0**2 - self.De
 				phi = 2 * xp.pi * xp.random.random(N) - xp.pi
 				p_phi = p0 * xp.ones(N)
-				func = lambda r: self.eps(r) + p0**2 / (2 * self.mu * r**2)
+				func = lambda r: p0**2 / (2 * self.mu * r**2) + self.eps(r)
 				r = self.generate_r(func, Energy0, N, self.r)
 				p_r = xp.sign(2 * xp.random.random(N) - 1) * xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)) - p_phi**2 / r**2)
 				if self.dim == 2:
@@ -192,7 +192,7 @@ class DiaMol:
 					Eval = self.energy(0, [r, phi, p_r, p_phi], field=False)
 					if Eval > 0:
 						rs = root_scalar(lambda r_: self.d_eps(r_) * r_**3 - p_phi**2 / self.mu, bracket=[4.9, 30], xtol=1e-10, rtol=1e-10, method='brentq').root
-						Es = rs * self.d_eps(rs) / 2 + self.eps(rs)
+						Es = p_phi**2 / (2 * self.mu * rs**2) + self.eps(rs)
 						if r > rs or Eval > Es:
 							dissociated[_] = True
 				else:

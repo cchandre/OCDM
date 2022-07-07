@@ -11,9 +11,9 @@ dimension = 2
 E0 = xp.linspace(0.011, 0.03, 50)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
-te = [5, 40, 5, 5]
+te = [5, 40, 5]
 
-Ntraj = 4000
+Ntraj = 400
 r = [2, 100]
 initial_conditions = ['microcanonical_J', 0, 30]
 EnergyPS = []
@@ -58,5 +58,5 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'darkmode': darkmode})
     dict.setdefault('contour_levels', 50)
     dict.setdefault('ode_solver', 'RK45')
-    dict.setdefault('Tol', [1e-10, 1e-10])
+    dict.setdefault('Tol', [1e-12, 1e-12])
 ###################################################################################################
