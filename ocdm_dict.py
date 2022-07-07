@@ -8,13 +8,13 @@ Method = 'dissociation'
 
 dimension = 2
 
-E0 = xp.linspace(0.01, 0.035, 200)
+E0 = xp.linspace(0.011, 0.03, 50)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5, 5]
 
-Ntraj = 50000
-r = [2.5, 10]
+Ntraj = 4000
+r = [2, 100]
 initial_conditions = ['microcanonical_J', 0, 30]
 EnergyPS = []
 EventPS = 'phi'
