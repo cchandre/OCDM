@@ -257,8 +257,7 @@ class DiaMol:
 		return self.cart2sph(self.sph2cart(y_))
 
 	def generate_r(self, func, Energy0, N, r):
-		vec = xp.linspace(r[0], r[1], 2**12)
-		if func(vec).min() > Energy0:
+		if func(xp.linspace(r[0], r[1], 2**12)).min() > Energy0:
 			raise ValueError('Empty energy surface')
 		else:
 			vec = []

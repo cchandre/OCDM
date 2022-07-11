@@ -13,8 +13,8 @@ Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5]
 
-Ntraj = 400
-r = [2, 100]
+Ntraj = 4000
+r = [2, 10]
 initial_conditions = ['microcanonical_J', 0, 30]
 EnergyPS = []
 EventPS = 'phi'
@@ -58,5 +58,5 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'darkmode': darkmode})
     dict.setdefault('contour_levels', 50)
     dict.setdefault('ode_solver', 'RK45')
-    dict.setdefault('Tol', [1e-12, 1e-12])
+    dict.setdefault('Tol', [1e-10, 1e-10])
 ###################################################################################################
