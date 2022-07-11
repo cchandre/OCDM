@@ -83,7 +83,7 @@ def run_method(case):
         plt.show()
     elif case.Method in ['dissociation', 'trajectories']:
         y0 = case.initcond(case.Ntraj)
-        t_eval = xp.linspace(0, case.te_ps.sum(), case.dpi)
+        t_eval = xp.linspace(0, case.te_au.sum(), case.dpi)
         if case.Method == 'dissociation':
             t_eval = xp.asarray([t_eval[0], t_eval[-1]])
         if xp.any(y0):
@@ -205,7 +205,7 @@ def run_method(case):
         y_events = []
         start = time.time()
         for y0 in y0_.transpose():
-            sol = solve_ivp(case.eqn_H, (0, case.te_ps.sum()), y0, events=event_ps, method=case.ode_solver, atol=case.Tol[0], rtol=case.Tol[1])
+            sol = solve_ivp(case.eqn_H, (0, case.te_au.sum()), y0, events=event_ps, method=case.ode_solver, atol=case.Tol[0], rtol=case.Tol[1])
             if xp.any(y_events):
                 y_events = xp.vstack((y_events, sol.y_events[0]))
             else:

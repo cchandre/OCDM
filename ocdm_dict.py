@@ -13,7 +13,7 @@ Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5]
 
-Ntraj = 4000
+Ntraj = 40000
 r = [2, 10]
 initial_conditions = ['microcanonical_J', 0, 30]
 EnergyPS = []

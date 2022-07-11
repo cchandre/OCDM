@@ -63,7 +63,7 @@ class DiaMol:
 		self.Omega = lambda t: Omega(t)
 		t = sp.symbols('t')
 		self.Phi = sp.lambdify(t, sp.integrate(self.Omega(t), t))
-		self.te_ps = xp.asarray(self.te) / 2.418884254e-5
+		self.te_au = xp.asarray(self.te) / 2.418884254e-5
 		a_s = [42.13, 15.4, 5.4, -5.25]
 		a_m = [-1599.0948228665286, 1064.701691434201, -262.7958617988855, 31.287242627165202, -1.8164825476900417, 0.04141328363593082]
 		r_a = [5, 10]
@@ -141,13 +141,13 @@ class DiaMol:
 		return H
 
 	def env(self, t):
-		te = xp.cumsum(self.te_ps)
+		te = xp.cumsum(self.te_au)
 		if self.envelope == 'sinus':
-			return xp.where(t<=0, 0, xp.where(t<=te[0], xp.sin(xp.pi * t / (2 * te[0]))**2, xp.where(t<=te[1], 1, xp.where(t<=te[2], xp.sin(xp.pi * (te[2] - t) / (2 * self.te_ps[2]))**2, 0))))
+			return xp.where(t<=0, 0, xp.where(t<=te[0], xp.sin(xp.pi * t / (2 * te[0]))**2, xp.where(t<=te[1], 1, xp.where(t<=te[2], xp.sin(xp.pi * (te[2] - t) / (2 * self.te_au[2]))**2, 0))))
 		elif self.envelope == 'const':
 			return 1
 		elif self.envelope == 'trapez':
-			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te_ps[2], 0))))
+			return xp.where(t<=0, 0, xp.where(t<=te[0], t / te[0], xp.where(t<=te[1], 1, xp.where(t<=te[2], (te[2] - t) / self.te_au[2], 0))))
 
 	def initcond(self, N):
 		if isinstance(self.initial_conditions[0], str):
