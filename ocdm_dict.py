@@ -8,12 +8,12 @@ Method = 'dissociation'
 
 dimension = 2
 
-E0 = xp.linspace(0.011, 0.03, 50)
+E0 = xp.linspace(0.011, 0.03, 300)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5]
 
-Ntraj = 40000
+Ntraj = 10000
 r = [2, 10]
 initial_conditions = ['microcanonical_J', 0, 30]
 EnergyPS = []
@@ -24,7 +24,7 @@ dpi = 3000
 
 SaveData = False
 PlotResults = False
-Parallelization = (True, 50)
+Parallelization = (True, 100)
 
 darkmode = True
 
@@ -50,13 +50,13 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'r': r,
         'initial_conditions': initial_conditions,
         'EnergyPS': EnergyPS,
-        'event': EventPS,
+        'EventPS': EventPS,
         'type_traj': type_traj,
         'dpi': dpi,
         'SaveData': SaveData,
         'PlotResults': PlotResults,
-        'darkmode': darkmode})
-    dict.setdefault('contour_levels', 50)
-    dict.setdefault('ode_solver', 'RK45')
-    dict.setdefault('Tol', [1e-10, 1e-10])
+        'darkmode': darkmode,
+        'contour_levels': 50,
+        'ode_solver': 'RK45',
+        'Tol': [1e-10, 1e-10]})
 ###################################################################################################

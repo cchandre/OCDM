@@ -113,7 +113,7 @@ def run_method(case):
                 if os.path.getsize(file.name) == 0:
                     t = sp.symbols('t')
                     beta = sp.diff(case.Omega(t), t)
-                    file.writelines('%   initial = {}       beta = {:.3e}    dim = {}\n'.format(case.initial_conditions, beta, case.dim))
+                    file.writelines('%   initial = {}       beta = {:.3e}    dim = {}    N = {}\n'.format(case.initial_conditions, beta, case.dim, case.Ntraj))
                     file.writelines('%   env = {}     {} \n'.format(case.envelope, case.te))
                     file.writelines('%   E0           proba \n')
                 file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')

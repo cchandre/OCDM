@@ -172,7 +172,7 @@ class DiaMol:
 				p_phi = p0 * xp.ones(N)
 				func = lambda r: p0**2 / (2 * self.mu * r**2) + self.eps(r)
 				r = self.generate_r(func, Energy0, N, self.r)
-				p_r = xp.sign(2 * xp.random.random(N) - 1) * xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)) - p_phi**2 / r**2)
+				p_r = (2 * xp.random.randint(0, 2, N) - 1) * xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)) - p_phi**2 / r**2)
 				if self.dim == 2:
 					return xp.concatenate((r, phi, p_r, p_phi), axis=None)
 				elif self.dim ==3:
