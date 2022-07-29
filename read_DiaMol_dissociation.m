@@ -10,7 +10,7 @@ data = importdata([path filename],' ',3) ;
 proba = data.data(index,2);
 figure, plot(t,proba,'LineWidth',3)
 set(gca,'box','on','FontSize',20,'LineWidth',2)
-xlabel('$t$ (ps)','interpreter','latex','FontSize',26)
+xlabel('$F_0$ (a.u.)','interpreter','latex','FontSize',26)
 ylabel('probability','FontSize',26)
 
 %
