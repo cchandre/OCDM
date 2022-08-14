@@ -119,6 +119,28 @@ class DiaMol:
 			dp_phi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
 			return xp.concatenate((dr, dtheta, dphi, dp_r, dp_theta, dp_phi), axis=None)
 
+	def eqn_L(self, h, t, y_):
+		r, phi, p_r, p_phi = xp.split(y_, 4)
+		r += p_r / self.mu * h
+		t += h
+		phi += p_phi / (self.mu * r**2) * h - self.Omega(t) * h
+		p_r += p_phi**2 / (self.mu * r**3) * h
+		Eeff = self.E0**2 * self.env(t)**2 / 4
+		p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
+		p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
+		return t, xp.concatenate((r, phi, p_r, p_phi), axis=None)
+
+	def eqn_La(self, h, t, y_):
+		r, phi, p_r, p_phi = xp.split(y_, 4)
+		Eeff = self.E0**2 * self.env(t)**2 / 4
+		p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
+		p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
+		phi += p_phi / (self.mu * r**2) * h - self.Omega(t) * h
+		p_r += p_phi**2 / (self.mu * r**3) * h
+		r += p_r / self.mu * h
+		t += h
+		return t, xp.concatenate((r, phi, p_r, p_phi), axis=None)
+
 	def energy(self, t, y_, field=True):
 		if field:
 			Eeff = self.E0**2 * self.env(t)**2 / 4
