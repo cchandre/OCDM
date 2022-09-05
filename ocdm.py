@@ -99,6 +99,9 @@ class DiaMol:
 		self.Dal = lambda r: self.al_para(r) - self.al_perp(r)
 		self.d_Dal = lambda r: d_al_para(r) - self.d_al_perp(r)
 		self.ZVS = lambda r, theta, phi, t: -self.mu * self.Omega(t)**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
+		alpha_s = [0.0792036964311957, 0.1303114101821663, 0.2228614958676077, -0.3667132690474257, 0.3246481886897062, 0.1096884778767498]
+		self.alpha_o = xp.tile([0, 1], 6)
+		self.alpha_s = xp.concatenate((alpha_s, alpha_s[::-1]))
 
 	def eqn_H(self, t, y_):
 		Eeff = self.E0**2 * self.env(t)**2 / 4
@@ -119,7 +122,7 @@ class DiaMol:
 			dp_phi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
 			return xp.concatenate((dr, dtheta, dphi, dp_r, dp_theta, dp_phi), axis=None)
 
-	def eqn_L(self, h, t, y_):
+	def chi(self, h, t, y_):
 		r, phi, p_r, p_phi = xp.split(y_, 4)
 		r += p_r / self.mu * h
 		t += h
@@ -130,7 +133,7 @@ class DiaMol:
 		p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
 		return t, xp.concatenate((r, phi, p_r, p_phi), axis=None)
 
-	def eqn_La(self, h, t, y_):
+	def chi_star(self, h, t, y_):
 		r, phi, p_r, p_phi = xp.split(y_, 4)
 		Eeff = self.E0**2 * self.env(t)**2 / 4
 		p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
@@ -140,6 +143,15 @@ class DiaMol:
 		r += p_r / self.mu * h
 		t += h
 		return t, xp.concatenate((r, phi, p_r, p_phi), axis=None)
+
+	def eqn_sympl(self, h, t, y):
+		t_, y_ = t.copy(), y.copy()
+		for as, ao in zip(self.alpha_s, self.alpha_o):
+			if ao == 1:
+				t_, y_ = self.chi_star(as * h, t_, y_)
+			elif ao == 0:
+				t_, y_ = self.chi(as * h, t_, y_)
+		return t_, y_
 
 	def energy(self, t, y_, field=True):
 		if field:
