@@ -20,12 +20,12 @@ EnergyPS = []
 EventPS = 'phi'
 ode_solver = 'BM4'
 ode_tol = [1e-10, 1e-10]
-ode_step = 0.01
+ode_step = 5e-3
 
 type_traj = ['dissociated', 'cartesian', 'rotated']
 dpi = 3000
 
-SaveData = True
+SaveData = False
 PlotResults = False
 Parallelization = (True, 50)
 

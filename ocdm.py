@@ -128,26 +128,56 @@ class DiaMol:
 			return xp.concatenate((dr, dtheta, dphi, dp_r, dp_theta, dp_phi), axis=None)
 
 	def chi(self, h, t, y):
-		t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
-		r += p_r / self.mu * h
-		t_ += h
-		phi += p_phi / (self.mu * r**2) * h - self.Omega(t_) * h
-		p_r += p_phi**2 / (self.mu * r**3) * h
-		Eeff = self.E0**2 * self.env(t_)**2 / 4
-		p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
-		p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
-		return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
+		if self.dim == 2:
+			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
+			r += p_r / self.mu * h
+			t_ += h
+			p_r += p_phi**2 / (self.mu * r**3) * h
+			phi += p_phi / (self.mu * r**2) * h - self.Omega(t_) * h
+			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
+			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
+			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
+		elif self.dim == 3:
+			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
+			r += p_r / self.mu * h
+			t_ += h
+			theta += p_theta / (self.mu * r**2) * h
+			p_r += p_theta**2 / (self.mu * r**3) * h
+			phi += p_phi / (self.mu * r**2 * xp.sin(theta)**2) * h - self.Omega(t_) * h
+			p_r += p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) * h
+			p_theta += p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) * h
+			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r)) * h
+			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2 * h
+			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi) * h
+			return t_, xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
 
 	def chi_star(self, h, t, y):
-		t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
-		Eeff = self.E0**2 * self.env(t_)**2 / 4
-		p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
-		p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
-		phi += p_phi / (self.mu * r**2) * h - self.Omega(t_) * h
-		p_r += p_phi**2 / (self.mu * r**3) * h
-		r += p_r / self.mu * h
-		t_ += h
-		return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
+		if self.dim == 2:
+			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
+			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
+			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
+			phi += p_phi / (self.mu * r**2) * h - self.Omega(t_) * h
+			p_r += p_phi**2 / (self.mu * r**3) * h
+			r += p_r / self.mu * h
+			t_ += h
+			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
+		elif self.dim == 3:
+			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
+			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r)) * h
+			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2 * h
+			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi) * h
+			phi += p_phi / (self.mu * r**2 * xp.sin(theta)**2) * h - self.Omega(t_) * h
+			p_r += p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) * h
+			p_theta += p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) * h
+			theta += p_theta / (self.mu * r**2) * h
+			p_r += p_theta**2 / (self.mu * r**3) * h
+			r += p_r / self.mu * h
+			t_ += h
+			return t_, xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
 
 	def eqn_sympl(self, h, t, y):
 		t_, y_ = t, y.copy()
