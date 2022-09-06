@@ -88,13 +88,33 @@ def run_method(case):
             t_eval = xp.asarray([t_eval[0], t_eval[-1]])
         if xp.any(y0):
             start = time.time()
-            sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, method=case.ode_solver, t_eval=t_eval, atol=case.Tol[0], rtol=case.Tol[1])
+            if case.ode_solver in ['RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA']:
+                sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, method=case.ode_solver, t_eval=t_eval, atol=case.Tol[0], rtol=case.Tol[1])
+                yf = sol.y
+            elif case.ode_solver in ['Verlet', 'BM4']:
+                nstep = int((case.te_au.sum() / case.Step) // 1) + 1
+                eval = xp.zeros(nstep, dtype=bool)
+                if case.Method == 'dissociation':
+                    eval[-1] = True
+                elif case.Method == 'trajectories':
+                    if case.dpi >= nstep:
+                        eval = xp.ones(nstep, dtype=bool)
+                    else:
+                        eval[-1::-(nstep // case.dpi)] = True
+                h = case.te_au.sum() / nstep
+                t, y = 0.0, y0.copy()
+                yf = y0.copy()
+                for _ in range(nstep):
+                    t, y = case.eqn_sympl(h, t, y)
+                    if eval[_]:
+                        yf = xp.vstack((yf, y))
+                yf = yf.transpose()
             print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
-            dissociated = case.check_dissociation(sol.y[:, -1])
+            dissociated = case.check_dissociation(yf[:, -1])
             if case.type_traj[1] == 'cartesian':
-                yc = case.sph2cart(sol.y)
+                yc = case.sph2cart(yf)
             elif case.type_traj[1] == 'spherical':
-                yc = case.mod(sol.y)
+                yc = case.mod(yf)
             if case.type_traj[2] == 'lab':
                 yc = case.rotating(yc, case.Phi(t_eval), type=case.type_traj[1])
             if case.type_traj[0] == 'dissociated' and xp.any(dissociated):
