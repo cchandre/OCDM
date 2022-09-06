@@ -44,7 +44,7 @@ ___
     - 'RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA': (non-symplectic, variable time step); see [ivp_solve](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) for more details
     - 'Verlet': Strang splitting or symplectic leap-frog integrator (symplectic, fixed time step, order 2); see [Wikipedia](https://en.wikipedia.org/wiki/Strang_splitting) for more details
     - 'BM4': BM<sub>6</sub>4 (symplectic, fixed time step, order 4) from [Blanes, Moan, J. Comput. Appl. Math. 142, 313 (2002)](https://doi.org/10.1016/S0377-0427(01)00492-7)
-- ode_tol: array of two floats; [RelTol, AbsTol] for variable time-step integrators; see [ivp_solve](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) for more details
+- ode_tol: array of two floats; absolute and relative tolerances [atol, rtol] for variable time-step integrators; see [ivp_solve](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) for more details
 - ode_step: float; time step for the symplectic integrators 'Verlet' and 'BM4'
 - *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical', 'lab' or 'rotated'] for the type of trajectories to be plotted and/or saved
 - *dpi*: integer; dpi value for the figures 
@@ -53,10 +53,6 @@ ___
 - *PlotResults*: boolean; if True, the results (for 'plot_potentials', 'plot_ZVS' and 'trajectories') are plotted right after the computation (with the type specified in 'type_traj' for 'trajectories')
 - *Parallelization*: tuple (boolean, int); True for parallelization, int is the number of cores to be used or int='all' to use all available cores
 - *darkmode*: boolean; if True, plots are done in dark mode
-####
-These options may be changed in [`ocdm_dict.py`](https://github.com/cchandre/OCDM/blob/main/ocdm_dict.py) (see [solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html)):
-- *ode_solver*: integration method to use (default='DOP853')
-- *Tol*: absolute and relative tolerances (default=[1e-10, 1e-10])
 
 ---
 For more information: <cristel.chandre@cnrs.fr>
