@@ -40,6 +40,12 @@ ___
    - array of shape (*Ntraj*, 2*dimension*) containing the initial conditions to be integrated
 - *EnergyPS*: float; initial value of the energy (atomic units) used in *Method*='poincaré'
 - *EventPS*: string; 'phi' or 'pr'; choice of Poincaré section; Poincaré section is *&phi;*=0 (mod 2 &pi;) with *&phi;'*<0 in the plane (*r*,*p*<sub>*r*</sub>) if *EventPS*='phi', and *p<sub>*r*</sub> =0 with *p<sub>*r*</sub>'<0 in the plane (*&phi;*,*p*<sub>*&phi;*</sub>) if *EventPS*='phi'
+- *ode_solver*: string; 'RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA', 'Verlet', 'BM4'; method for the integration of trajectories
+    - 'RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA': (non-symplectic, variable time step); see [ivp_solve](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) for more details
+    - 'Verlet': Strang splitting or symplectic leap-frog integrator (symplectic, fixed time step, order 2); see [Wikipedia](https://en.wikipedia.org/wiki/Strang_splitting) for more details
+    - 'BM4': BM<sub>6</sub>4 (symplectic, fixed time step, order 4) from [Blanes, Moan, J. Comput. Appl. Math. 142, 313 (2002)](https://doi.org/10.1016/S0377-0427(01)00492-7)
+- ode_tol: array of two floats; [RelTol, AbsTol] for variable time-step integrators; see [ivp_solve](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) for more details
+- ode_step: float; time step for the symplectic integrators 'Verlet' and 'BM4'
 - *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical', 'lab' or 'rotated'] for the type of trajectories to be plotted and/or saved
 - *dpi*: integer; dpi value for the figures 
 ####
