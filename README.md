@@ -46,7 +46,7 @@ ___
     - 'BM4': BM<sub>6</sub>4 (symplectic, fixed time step, order 4) from [Blanes, Moan, J. Comput. Appl. Math. 142, 313 (2002)](https://doi.org/10.1016/S0377-0427(01)00492-7)
     - NB: For Poincaré sections, ode_solver = 'RK45' by default
 - ode_tol: array of two floats; absolute and relative tolerances [atol, rtol] for variable time-step integrators; see [ivp_solve](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) for more details
-- ode_step: float; time step for the symplectic integrators 'Verlet' and 'BM4'
+- ode_step: float; time step (in picoseconds) for the symplectic integrators 'Verlet' and 'BM4'
 - *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical', 'lab' or 'rotated'] for the type of trajectories to be plotted and/or saved
 - *dpi*: integer; dpi value for the figures 
 ####
