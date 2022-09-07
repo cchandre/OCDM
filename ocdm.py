@@ -80,7 +80,7 @@ class DiaMol:
 		d_eps = sp.diff(eps, r)
 		self.eps = sp.lambdify(r, eps)
 		self.d_eps = sp.lambdify(r, d_eps)
-		self.p_phi_ion = xp.floor(xp.sqrt(-self.mu * fmin(lambda r: -r**3 * self.d_eps(r), 5, full_output=True, disp=False, xtol=1e-10, ftol=1e-10)[1]))
+		self.p_st = xp.floor(xp.sqrt(-self.mu * fmin(lambda r: -r**3 * self.d_eps(r), 5, full_output=True, disp=False, xtol=1e-10, ftol=1e-10)[1]))
 		poly = lambda r, a: sum(c * r**k for k, c in enumerate(a))
 		deriv = lambda fun: sp.lambdify(r, sp.diff(fun, r))
 		para_s, perp_s = poly(r - self.re, a_s), poly(r - self.re, b_s)
@@ -325,7 +325,7 @@ class DiaMol:
 		if self.dim == 2 and self.criterion == 'exact':
 			dissociated = xp.zeros(len(y_)//4, dtype=bool)
 			for _, (r, phi, p_r, p_phi) in enumerate(zip(*xp.split(y_, 4))):
-				if xp.abs(p_phi) < self.p_phi_ion:
+				if xp.abs(p_phi) < self.p_st:
 					Eval = self.energy(0, [r, phi, p_r, p_phi], field=False)
 					if Eval > 0:
 						rs = root_scalar(lambda r_: self.d_eps(r_) * r_**3 - p_phi**2 / self.mu, bracket=[4.9, 30], xtol=1e-10, rtol=1e-10, method='brentq').root
@@ -339,7 +339,19 @@ class DiaMol:
 			r, phi, p_r, p_phi = xp.split(y_, 4)
 			return (r > 20)
 		elif self.dim == 3 and self.criterion == 'exact':
-			print('\033[33m          Warning: Exact dissociation criterion not yet implemented for the 3D case; distance criterion used instead \033[00m')
+			dissociated = xp.zeros(len(y_)//6, dtype=bool)
+			for _, (r, theta, phi, p_r, p_theta, p_phi) in enumerate(zip(*xp.split(y_, 6))):
+				p_ = xp.sqrt(p_theta**2 + p_phi**2 / xp.sin(theta)**2)
+				if p_ < self.p_st:
+					Eval = self.energy(0, [r, theta, phi, p_r, p_theta, p_phi], field=False)
+					if Eval > 0:
+						rs = root_scalar(lambda r_: self.d_eps(r_) * r_**3 - p_**2 / self.mu, bracket=[4.9, 30], xtol=1e-10, rtol=1e-10, method='brentq').root
+						Es = p_**2 / (2 * self.mu * rs**2) + self.eps(rs)
+						if r > rs or Eval > Es:
+							dissociated[_] = True
+				else:
+					dissociated[_] = True
+			return dissociated
 		elif self.dim == 3 and self.criterion == 'distance':
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
 			return (r > 20)
