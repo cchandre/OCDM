@@ -338,7 +338,9 @@ class DiaMol:
 		elif self.dim == 2 and self.criterion == 'distance':
 			r, phi, p_r, p_phi = xp.split(y_, 4)
 			return (r > 20)
-		elif self.dim == 3:
+		elif self.dim == 3 and self.criterion == 'exact':
+			print('\033[33m          Warning: Exact dissociation criterion not yet implemented for the 3D case; distance criterion used instead \033[00m')
+		elif self.dim == 3 and self.criterion == 'distance':
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
 			return (r > 20)
 
