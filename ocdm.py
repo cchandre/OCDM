@@ -110,14 +110,14 @@ class DiaMol:
 
 	def eqn_H(self, t, y_):
 		Eeff = self.E0**2 * self.env(t)**2 / 4
-		if self.dim == 2:
+		if self.dim == 2 and self.frame == 'rotating':
 			r, phi, p_r, p_phi = xp.split(y_, 4)
 			dr = p_r / self.mu
 			dphi = p_phi / (self.mu * r**2) - self.Omega(t)
 			dp_r = p_phi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
 			dp_phi = -Eeff * self.Dal(r) * xp.sin(2 * phi)
 			return xp.concatenate((dr, dphi, dp_r, dp_phi), axis=None)
-		elif self.dim == 3:
+		elif self.dim == 3 and self.frame == 'rotating':
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
 			dr = p_r / self.mu
 			dtheta = p_theta / (self.mu * r**2)
@@ -126,9 +126,25 @@ class DiaMol:
 			dp_theta = p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2
 			dp_phi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
 			return xp.concatenate((dr, dtheta, dphi, dp_r, dp_theta, dp_phi), axis=None)
+		elif self.dim == 2 and self.frame == 'fixed':
+			r, phi, p_r, p_phi = xp.split(y_, 4)
+			dr = p_r / self.mu
+			dphi = p_phi / (self.mu * r**2)
+			dp_r = p_phi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r))
+			dp_phi = -Eeff * self.Dal(r) * xp.sin(2 * (phi - self.Phi(t_)))
+			return xp.concatenate((dr, dphi, dp_r, dp_phi), axis=None)
+		elif self.dim == 3 and self.frame == 'fixed':
+			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
+			dr = p_r / self.mu
+			dtheta = p_theta / (self.mu * r**2)
+			dphi = p_phi / (self.mu * r**2 * xp.sin(theta)**2)
+			dp_r = p_theta**2 / (self.mu * r**3) + p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r))
+			dp_theta = p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi - self.Phi(t_))**2
+			dp_phi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * (phi - self.Phi(t_)))
+			return xp.concatenate((dr, dtheta, dphi, dp_r, dp_theta, dp_phi), axis=None)
 
 	def chi(self, h, t, y):
-		if self.dim == 2:
+		if self.dim == 2 and self.frame == 'rotating':
 			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
 			r += p_r / self.mu * h
 			t_ += h
@@ -138,7 +154,7 @@ class DiaMol:
 			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
 			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
 			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
-		elif self.dim == 3:
+		elif self.dim == 3 and self.frame == 'rotating':
 			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
 			r += p_r / self.mu * h
 			t_ += h
@@ -152,9 +168,33 @@ class DiaMol:
 			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2 * h
 			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi) * h
 			return t_, xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
+		elif self.dim == 2 and self.frame == 'fixed':
+			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
+			r += p_r / self.mu * h
+			t_ += h
+			phi += p_phi / (self.mu * r**2) * h
+			p_r += p_phi**2 / (self.mu * r**3) * h
+			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
+			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * (phi - self.Phi(t_))) * h
+			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
+		elif self.dim == 3 and self.frame == 'fixed':
+			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
+			r += p_r / self.mu * h
+			t_ += h
+			theta += p_theta / (self.mu * r**2) * h
+			p_r += p_theta**2 / (self.mu * r**3) * h
+			phi += p_phi / (self.mu * r**2 * xp.sin(theta)**2) * h
+			p_r += p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) * h
+			p_theta += p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) * h
+			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
+			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi - self.Phi(t_))**2 * h
+			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * (phi - self.Phi(t_))) * h
+			return t_, xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
 
 	def chi_star(self, h, t, y):
-		if self.dim == 2:
+		if self.dim == 2 and self.frame == 'rotating':
 			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
 			Eeff = self.E0**2 * self.env(t_)**2 / 4
 			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
@@ -164,13 +204,37 @@ class DiaMol:
 			r += p_r / self.mu * h
 			t_ += h
 			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
-		elif self.dim == 3:
+		elif self.dim == 3 and self.frame == 'rotating':
 			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
 			Eeff = self.E0**2 * self.env(t_)**2 / 4
 			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r)) * h
 			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2 * h
 			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi) * h
 			phi += p_phi / (self.mu * r**2 * xp.sin(theta)**2) * h - self.Omega(t_) * h
+			p_r += p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) * h
+			p_theta += p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) * h
+			theta += p_theta / (self.mu * r**2) * h
+			p_r += p_theta**2 / (self.mu * r**3) * h
+			r += p_r / self.mu * h
+			t_ += h
+			return t_, xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
+		elif self.dim == 2 and self.frame == 'fixed':
+			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
+			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
+			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * (phi - self.Phi(t_))) * h
+			phi += p_phi / (self.mu * r**2) * h
+			p_r += p_phi**2 / (self.mu * r**3) * h
+			r += p_r / self.mu * h
+			t_ += h
+			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
+		elif self.dim == 3 and self.frame == 'fixed':
+			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
+			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
+			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi - self.Phi(t_))**2 * h
+			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * (phi - self.Phi(t_))) * h
+			phi += p_phi / (self.mu * r**2 * xp.sin(theta)**2) * h
 			p_r += p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) * h
 			p_theta += p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) * h
 			theta += p_theta / (self.mu * r**2) * h
@@ -197,16 +261,20 @@ class DiaMol:
 			else:
 				r, phi, p_r, p_phi = y_
 			H = (p_r**2 + p_phi**2 / r**2) / (2 * self.mu) + self.eps(r)
-			if field:
-				H += - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
+			if field and self.frame == 'rotating':
+				H += -self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
+			elif field and self.frame == 'fixed':
+				H += -Eeff * (self.Dal(r) * xp.cos(phi - self.Phi(t_))**2 + self.al_perp(r))
 		elif self.dim == 3:
 			if len(y_) > 2 * self.dim:
 				r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
 			else:
 				r, theta, phi, p_r, p_theta, p_phi = y_
 			H = (p_r**2 + p_theta**2 / r**2 + p_phi**2 / (r**2 * xp.sin(theta)**2)) / (2 * self.mu) + self.eps(r)
-			if field:
-				H += - self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
+			if field and self.frame == 'rotating':
+				H += -self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
+			elif field and self.frame == 'fixed':
+				H += -Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t_))**2 + self.al_perp(r))
 		return H
 
 	def env(self, t):
@@ -254,7 +322,7 @@ class DiaMol:
 			raise ValueError('Wrong value for initial_conditions')
 
 	def check_dissociation(self, y_):
-		if self.dim == 2:
+		if self.dim == 2 and self.criterion == 'exact':
 			dissociated = xp.zeros(len(y_)//4, dtype=bool)
 			for _, (r, phi, p_r, p_phi) in enumerate(zip(*xp.split(y_, 4))):
 				if xp.abs(p_phi) < self.p_phi_ion:
@@ -267,6 +335,9 @@ class DiaMol:
 				else:
 					dissociated[_] = True
 			return dissociated
+		elif self.dim == 2 and self.criterion == 'distance':
+			r, phi, p_r, p_phi = xp.split(y_, 4)
+			return (r > 20)
 		elif self.dim == 3:
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
 			return (r > 20)

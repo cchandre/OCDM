@@ -8,12 +8,12 @@ Method = 'dissociation'
 
 dimension = 2
 
-E0 = xp.linspace(0.015, 0.02, 200)
+E0 = xp.linspace(0.015, 0.02, 10)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5]
 
-Ntraj = 40000
+Ntraj = 4000
 r = [2, 10]
 initial_conditions = ['microcanonical_J', 0, 30]
 EnergyPS = []
@@ -21,13 +21,15 @@ EventPS = 'phi'
 ode_solver = 'BM4'
 ode_tol = [1e-10, 1e-10]
 ode_step = 5e-3
+frame = 'fixed'
 
-type_traj = ['dissociated', 'cartesian', 'rotated']
+type_traj = ['dissociated', 'cartesian', 'rotating']
 dpi = 3000
+criterion = 'distance'
 
 SaveData = False
 PlotResults = False
-Parallelization = (True, 50)
+Parallelization = (False, 50)
 
 darkmode = True
 
@@ -63,5 +65,7 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'contour_levels': 50,
         'ode_solver': ode_solver,
         'Tol': ode_tol,
-        'Step': ode_step})
+        'Step': ode_step,
+        'frame': frame,
+        'criterion': criterion})
 ###################################################################################################

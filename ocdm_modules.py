@@ -115,7 +115,7 @@ def run_method(case):
                 yc = case.sph2cart(yf)
             elif case.type_traj[1] == 'spherical':
                 yc = case.mod(yf)
-            if case.type_traj[2] == 'lab':
+            if case.type_traj[2] == 'fixed' and case.frame == 'rotating':
                 yc = case.rotating(yc, case.Phi(t_eval), type=case.type_traj[1])
             if case.type_traj[0] == 'dissociated' and xp.any(dissociated):
                 yc = yc[xp.tile(dissociated, 2 * case.dim), :]
