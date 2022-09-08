@@ -83,12 +83,12 @@ def run_method(case):
         plt.show()
     elif case.Method in ['dissociation', 'trajectories']:
         y0 = case.initcond(case.Ntraj)
-        t_eval = xp.linspace(0, case.te_au.sum(), case.dpi)
         if case.Method == 'dissociation':
             t_eval = xp.asarray([t_eval[0], t_eval[-1]])
         if xp.any(y0):
             start = time.time()
             if case.ode_solver in ['RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA']:
+                t_eval = xp.linspace(0, case.te_au.sum(), case.dpi)
                 sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, method=case.ode_solver, t_eval=t_eval, atol=case.Tol[0], rtol=case.Tol[1])
                 yf = sol.y
             elif case.ode_solver in ['Verlet', 'BM4']:
@@ -99,8 +99,11 @@ def run_method(case):
                 elif case.Method == 'trajectories':
                     if case.dpi >= nstep:
                         eval = xp.ones(nstep, dtype=bool)
+                        t_eval = xp.linspace(0, case.te_au.sum(), nstep)
                     else:
                         eval[-1::-(nstep // case.dpi)] = True
+                        tvec = xp.linspace(0, case.te_au.sum(), nstep)
+                        t_eval = xp.insert(xp.flip(tvec[-1::-(nstep // case.dpi)]), 0, 0.0)
                 h = case.te_au.sum() / nstep
                 t, y = 0.0, y0.copy()
                 yf = y0.copy()
