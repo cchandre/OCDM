@@ -84,7 +84,7 @@ def run_method(case):
     elif case.Method in ['dissociation', 'trajectories']:
         y0 = case.initcond(case.Ntraj)
         if case.Method == 'dissociation':
-            t_eval = xp.asarray([t_eval[0], t_eval[-1]])
+            t_eval = xp.asarray([0.0, case.te_au.sum()])
         if xp.any(y0):
             start = time.time()
             if case.ode_solver in ['RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA']:
@@ -119,6 +119,8 @@ def run_method(case):
             elif case.type_traj[1] == 'spherical':
                 yc = case.mod(yf)
             if case.type_traj[2] == 'fixed' and case.frame == 'rotating':
+                yc = case.rotating(yc, -case.Phi(t_eval), type=case.type_traj[1])
+            elif case.type_traj[2] == 'rotating' and case.frame == 'fixed':
                 yc = case.rotating(yc, case.Phi(t_eval), type=case.type_traj[1])
             if case.type_traj[0] == 'dissociated' and xp.any(dissociated):
                 yc = yc[xp.tile(dissociated, 2 * case.dim), :]
@@ -147,6 +149,9 @@ def run_method(case):
                     axs = fig.add_gridspec(2, hspace=0.2).subplots(sharex=True)
                 elif case.type_traj[1] == 'spherical':
                     axs = fig.add_gridspec(3, hspace=0.2).subplots(sharex=True)
+                    axs[2].set_ylim((-1, 1))
+                    axs[2].set_yticks([-1, 0, 1])
+                    axs[2].set_yticklabels([r'-1', r'0', r'1'])
                 te = xp.cumsum(xp.asarray(case.te))
                 for ax in axs:
                     for t in te:
@@ -164,19 +169,19 @@ def run_method(case):
                         ylabels = [r'$p_x$, $p_y$, $p_z$', r'$x$, $y$, $z$']
                 elif case.type_traj[1] == 'spherical':
                     if case.dim == 2:
-                        labels = [r'$r$', r'$\phi$', r'$p_r$', r'$p_\phi$']
-                        ylabels = [r'$p_r$, $p_\phi$', r'$r$', r'$\phi$']
+                        labels = [r'$r$', [r'cos $\phi$', r'sin $\phi$'], r'$p_r$', r'$p_\phi$']
+                        ylabels = [r'$p_r$, $p_\phi$', r'$r$', r'cos $\phi$, sin $\phi$']
                         panels[1] = 2
                     elif case.dim == 3:
-                        labels = [r'$r$', r'$\theta$', r'$\phi$', r'$p_r$', r'$p_\theta$', r'$p_\phi$']
-                        ylabels = [r'$p_r$, $p_\theta$, $p_\phi$', r'$r$', r'$\theta$, $\phi$']
+                        labels = [r'$r$', [r'cos $\theta$', r'sin $\theta$'], [r'cos $\phi$', r'sin $\phi$'], r'$p_r$', r'$p_\theta$', r'$p_\phi$']
+                        ylabels = [r'$p_r$, $p_\theta$, $p_\phi$', r'$r$', r'cos $\theta$, sin $\theta$, cos $\phi$, sin $\phi$']
                         panels[1:3] = 2
                 for k, coord in enumerate(xp.split(yc, 2 * case.dim, axis=0)):
                     if panels[k] == 2:
-                        axs[panels[k]].set_ylim((-xp.pi, xp.pi))
-                        axs[panels[k]].set_yticks([-xp.pi, 0, xp.pi])
-                        axs[panels[k]].set_yticklabels([r'$-\pi$', r'0', r'$\pi$'])
-                    axs[panels[k]].plot(t_eval, coord.transpose(), colors[k], label=labels[k])
+                        axs[2].plot(t_eval, xp.cos(coord.transpose()), colors[k], label=labels[k][0])
+                        axs[2].plot(t_eval, xp.sin(coord.transpose()), colors[k], label=labels[k][1], linestyle='dashed')
+                    else:
+                        axs[panels[k]].plot(t_eval, coord.transpose(), colors[k], label=labels[k])
                 for ylabel, ax in zip(ylabels, axs):
                     handles, labels = ax.get_legend_handles_labels()
                     by_label = dict(zip(labels, handles))

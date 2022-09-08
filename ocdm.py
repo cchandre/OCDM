@@ -130,17 +130,17 @@ class DiaMol:
 			r, phi, p_r, p_phi = xp.split(y_, 4)
 			dr = p_r / self.mu
 			dphi = p_phi / (self.mu * r**2)
-			dp_r = p_phi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r))
-			dp_phi = -Eeff * self.Dal(r) * xp.sin(2 * (phi - self.Phi(t_)))
+			dp_r = p_phi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi - self.Phi(t))**2 + self.d_al_perp(r))
+			dp_phi = -Eeff * self.Dal(r) * xp.sin(2 * (phi - self.Phi(t)))
 			return xp.concatenate((dr, dphi, dp_r, dp_phi), axis=None)
 		elif self.dim == 3 and self.frame == 'fixed':
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
 			dr = p_r / self.mu
 			dtheta = p_theta / (self.mu * r**2)
 			dphi = p_phi / (self.mu * r**2 * xp.sin(theta)**2)
-			dp_r = p_theta**2 / (self.mu * r**3) + p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r))
-			dp_theta = p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi - self.Phi(t_))**2
-			dp_phi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * (phi - self.Phi(t_)))
+			dp_r = p_theta**2 / (self.mu * r**3) + p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t))**2 + self.d_al_perp(r))
+			dp_theta = p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi - self.Phi(t))**2
+			dp_phi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * (phi - self.Phi(t)))
 			return xp.concatenate((dr, dtheta, dphi, dp_r, dp_theta, dp_phi), axis=None)
 
 	def chi(self, h, t, y):
@@ -395,10 +395,10 @@ class DiaMol:
 			x, y, px, py = xp.split(y__, 4)
 		elif self.dim == 3:
 			x, y, z, px, py, pz = xp.split(y__, 6)
-		xr = x * xp.cos(angle) - y * xp.sin(angle)
-		yr = x * xp.sin(angle) + y * xp.cos(angle)
-		pxr = px * xp.cos(angle) - py * xp.sin(angle)
-		pyr = px * xp.sin(angle) + py * xp.cos(angle)
+		xr = x * xp.cos(angle) + y * xp.sin(angle)
+		yr = -x * xp.sin(angle) + y * xp.cos(angle)
+		pxr = px * xp.cos(angle) + py * xp.sin(angle)
+		pyr = -px * xp.sin(angle) + py * xp.cos(angle)
 		if self.dim == 2:
 			y__ = xp.concatenate((xr, yr, pxr, pyr))
 		elif self.dim == 3:
