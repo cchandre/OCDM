@@ -124,7 +124,7 @@ def run_method(case):
                 yc = case.rotating(yc, case.Phi(t_eval), type=case.type_traj[1])
             if case.type_traj[0] == 'dissociated' and xp.any(dissociated):
                 yc = yc[xp.tile(dissociated, 2 * case.dim), :]
-            elif case.type_traj[0] == 'not_dissociated' and (not xp.all(dissociated)):
+            elif case.type_traj[0] == 'bounded' and (not xp.all(dissociated)):
                 yc = yc[xp.logical_not(xp.tile(dissociated, 2 * case.dim)), :]
             elif case.type_traj[0] != 'all' and (case.PlotResults or case.SaveData):
                 print('\033[33m          Warning: All trajectories are being displayed and/or saved \033[00m')
