@@ -48,7 +48,7 @@ ___
 - *ode_tol*: array of two floats; absolute and relative tolerances [atol, rtol] for variable time-step integrators; see [ivp_solve](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) for more details
 - *ode_step*: float; time step (in picoseconds) for the symplectic integrators 'Verlet' and 'BM4'
 - *frame*: string; 'fixed' or 'rotating'; specifies in which frame the numerical integration is performed
-- *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'non_dissociated', 'cartesian' or 'spherical', 'fixed' or 'rotating'] for the type of trajectories to be plotted and/or saved
+- *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'bounded', 'cartesian' or 'spherical', 'fixed' or 'rotating'] for the type of trajectories to be plotted and/or saved
 - *dpi*: integer; dpi value for the figures 
 - *criterion*: string; 'exact' or 'distance'; criterion for dissociation
 ####
