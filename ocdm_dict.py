@@ -4,16 +4,16 @@
 
 import numpy as xp
 
-Method = 'trajectories'
+Method = 'dissociation'
 
-dimension = 3
+dimension = 2
 
-E0 = xp.linspace(0.015, 0.015, 1)
+E0 = xp.linspace(0.01, 0.03, 300)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5]
 
-Ntraj = 100
+Ntraj = 40000
 r = [2, 10]
 initial_conditions = ['microcanonical_J', 0, 30]
 spread3D = 0.1
@@ -29,7 +29,7 @@ dpi = 1000
 criterion = 'exact'
 
 SaveData = False
-PlotResults = True
+PlotResults = False
 Parallelization = (False, 50)
 
 darkmode = True
