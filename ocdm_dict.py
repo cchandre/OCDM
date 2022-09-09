@@ -4,31 +4,32 @@
 
 import numpy as xp
 
-Method = 'dissociation'
+Method = 'trajectories'
 
-dimension = 2
+dimension = 3
 
-E0 = xp.linspace(0.015, 0.02, 10)
+E0 = xp.linspace(0.015, 0.015, 1)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5]
 
-Ntraj = 4000
+Ntraj = 100
 r = [2, 10]
 initial_conditions = ['microcanonical_J', 0, 30]
+spread3D = 0.1
 EnergyPS = []
 EventPS = 'phi'
 ode_solver = 'BM4'
-ode_tol = [1e-10, 1e-10]
-ode_step = 5e-3
-frame = 'fixed'
+ode_tol = [1e-7, 1e-7]
+ode_step = 2e-3
+frame = 'rotating'
 
-type_traj = ['dissociated', 'cartesian', 'rotating']
-dpi = 3000
-criterion = 'distance'
+type_traj = ['dissociated', 'spherical', 'fixed']
+dpi = 1000
+criterion = 'exact'
 
 SaveData = False
-PlotResults = False
+PlotResults = True
 Parallelization = (False, 50)
 
 darkmode = True
@@ -40,7 +41,7 @@ if Method == 'poincaré':
     dimension = 2
     envelope = 'const'
     te = [0, sum(te), 0]
-    type_traj = ['all', 'spherical', 'rotated']
+    type_traj = ['all', 'spherical', 'rotating']
     ode_solver = 'RK45'
 dict_list = [{'Method': Method} for _ in xp.atleast_1d(E0)]
 if not isinstance(initial_conditions[0], str):
@@ -55,6 +56,7 @@ for dict, E in zip(dict_list, xp.atleast_1d(E0)):
         'Ntraj': Ntraj,
         'r': r,
         'initial_conditions': initial_conditions,
+        'spread3D': min(max(spread3D, 0), 1),
         'EnergyPS': EnergyPS,
         'EventPS': EventPS,
         'type_traj': type_traj,

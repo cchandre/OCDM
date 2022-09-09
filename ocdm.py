@@ -306,15 +306,17 @@ class DiaMol:
 				p0 = xp.sqrt(self.initial_conditions[2] * (self.initial_conditions[2] + 1))
 				Energy0 = self.we * (self.initial_conditions[1] + 0.5) + self.Be * p0**2 - self.De
 				phi = 2 * xp.pi * xp.random.random(N) - xp.pi
-				p_phi = p0 * xp.ones(N)
 				func = lambda r: p0**2 / (2 * self.mu * r**2) + self.eps(r)
 				r = self.generate_r(func, Energy0, N, self.r)
-				p_r = (2 * xp.random.randint(0, 2, N) - 1) * xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)) - p_phi**2 / r**2)
+				p_r = (2 * xp.random.randint(0, 2, N) - 1) * xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)) - p0**2 / r**2)
 				if self.dim == 2:
+					p_phi = p0 * xp.ones(N)
 					return xp.concatenate((r, phi, p_r, p_phi), axis=None)
-				elif self.dim ==3:
-					theta = xp.pi * xp.random.random(N)
-					p_theta = xp.zeros(N)
+				elif self.dim == 3:
+					psi = 2 * xp.pi * xp.random.random(N)
+					theta = xp.pi / 2 * (1 + self.spread3D * (2 * xp.random.random(N) - 1))
+					p_theta = p0 * xp.cos(psi)
+					p_phi = p0 * xp.sin(psi) * xp.sin(theta)
 					return xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
 		elif all([isinstance(item, float) or isinstance(item, int) for item in self.initial_conditions]):
 			return xp.asarray(self.initial_conditions).flatten('F')

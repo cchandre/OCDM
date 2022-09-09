@@ -144,11 +144,11 @@ def run_method(case):
                 file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
                 file.close()
             elif case.Method == 'trajectories' and case.PlotResults:
-                fig = plt.figure(figsize=(8, 10))
+                fig = plt.figure(figsize=(12, 9.5))
                 if case.type_traj[1] == 'cartesian':
-                    axs = fig.add_gridspec(2, hspace=0.2).subplots(sharex=True)
+                    axs = fig.add_gridspec(2, hspace=0.23).subplots(sharex=True)
                 elif case.type_traj[1] == 'spherical':
-                    axs = fig.add_gridspec(3, hspace=0.2).subplots(sharex=True)
+                    axs = fig.add_gridspec(3, hspace=0.23).subplots(sharex=True)
                     axs[2].set_ylim((-1, 1))
                     axs[2].set_yticks([-1, 0, 1])
                     axs[2].set_yticklabels([r'-1', r'0', r'1'])
@@ -174,7 +174,7 @@ def run_method(case):
                         panels[1] = 2
                     elif case.dim == 3:
                         labels = [r'$r$', [r'cos $\theta$', r'sin $\theta$'], [r'cos $\phi$', r'sin $\phi$'], r'$p_r$', r'$p_\theta$', r'$p_\phi$']
-                        ylabels = [r'$p_r$, $p_\theta$, $p_\phi$', r'$r$', r'cos $\theta$, sin $\theta$, cos $\phi$, sin $\phi$']
+                        ylabels = [r'$p_r$, $p_\theta$, $p_\phi$', r'$r$', r'cos $\theta$, sin $\theta$\\ cos $\phi$, sin $\phi$']
                         panels[1:3] = 2
                 for k, coord in enumerate(xp.split(yc, 2 * case.dim, axis=0)):
                     if panels[k] == 2:
@@ -186,7 +186,7 @@ def run_method(case):
                     handles, labels = ax.get_legend_handles_labels()
                     by_label = dict(zip(labels, handles))
                     ax.legend(by_label.values(), by_label.keys(), loc='upper right', labelcolor='linecolor')
-                    ax.set_ylabel(ylabel)
+                    ax.set_ylabel(ylabel, multialignment='center')
                 plt.show()
     elif case.Method == 'poincaré':
         filestr += '_' + 'E0{:.2e}'.format(case.E0).replace('.', '')
