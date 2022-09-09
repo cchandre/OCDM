@@ -33,11 +33,12 @@ ___
 - *envelope*: string ('const', 'sinus', 'trapez'); envelope function *f*(*t*) of the laser field
 - *te*: array of 3 or 4 floats; duration of ramp-up, plateau, ramp-down and (optional) after pulse (in picoseconds)
 - *Ntraj*: integer; number of trajectories to be integrated
--  *r*: array of two floats; minimum and maximum values of *r* for the display of potentials, and range of *r* (atomic units) for the selection of initial conditions
--  *initial_conditions*: string or array of floats; 
+- *r*: array of two floats; minimum and maximum values of *r* for the display of potentials, and range of *r* (atomic units) for the selection of initial conditions
+- *initial_conditions*: string or array of floats; 
    - ['microcanonical', *E*<sub>0</sub>] for a microcanonical distribution with energy *E*<sub>0</sub>
    - ['microcanonical_J', *n*, *J*] for a microcanonical distribution with initial energy *E*<sub>0</sub> = &omega;<sub>e</sub> (*n*+1/2) + *B*<sub>e</sub> *J*(*J*+1)-*D*<sub>e</sub>
    - array of shape (*Ntraj*, 2*dimension*) containing the initial conditions to be integrated
+- *spread3D*: float; between 0 and 1; spread in angle theta for the initial conditions (only in the 3D case)
 - *EnergyPS*: float; initial value of the energy (atomic units) used in *Method*='poincaré'
 - *EventPS*: string; 'phi' or 'pr'; choice of Poincaré section; Poincaré section is *&phi;*=0 (mod 2 &pi;) with *&phi;'*<0 in the plane (*r*,*p*<sub>*r*</sub>) if *EventPS*='phi', and *p<sub>*r*</sub> =0 with *p<sub>*r*</sub>'<0 in the plane (*&phi;*,*p*<sub>*&phi;*</sub>) if *EventPS*='phi'
 - *ode_solver*: string; 'RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA', 'Verlet', 'BM4'; method for the integration of trajectories
