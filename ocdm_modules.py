@@ -50,7 +50,7 @@ def run_method(case):
         plt.rc('ytick', color=cs[1], labelcolor=cs[1])
         plt.rc('image', cmap='bwr')
     filestr = type(case).__name__
-    if case.Method == 'plot_potentials' and case.PlotResults:
+    if case.Method == 'plot_potentials':
         plt.rcParams.update({'figure.figsize': [16, 8]})
         fig, axs = plt.subplots(1, 2)
         r = xp.linspace(case.r[0], case.r[1], case.dpi)
@@ -58,8 +58,10 @@ def run_method(case):
         axs[1].plot(r, case.al_para(r), cs[2], lw=3, label=r'$\alpha_\parallel(r)$')
         axs[1].plot(r, case.al_perp(r), cs[3], lw=3, label=r'$\alpha_\perp(r)$')
         for ax in axs:
-            ax.set_xlabel(r'$r$')
+            ax.set_xlabel(r'$r$ (a.u.)')
             ax.legend(loc='upper right', labelcolor='linecolor')
+            ax.set_xlim((case.r[0], case.r[1]))
+        axs[0].set_ylim((-0.1, 0.2))
         if case.SaveData:
             fig.savefig(filestr + '.png', dpi=case.dpi)
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
@@ -129,7 +131,10 @@ def run_method(case):
             elif case.type_traj[0] != 'all' and (case.PlotResults or case.SaveData):
                 print('\033[33m          Warning: All trajectories are being displayed and/or saved \033[00m')
             t_eval *= 2.42e-5
-            save_data(case, xp.array([t_eval, yc], dtype=object), filestr)
+            if case.type_traj[0] == 'all':
+                save_data(case, xp.array([t_eval, yc[xp.tile(dissociated, 2 * case.dim), :], yc[xp.logical_not(xp.tile(dissociated, 2 * case.dim)), :]], dtype=object), filestr)
+            else:
+                save_data(case, xp.array([t_eval, yc], dtype=object), filestr)
             if case.Method == 'dissociation':
                 proba = dissociated.sum() / case.Ntraj
                 print('\033[96m          for E0 = {:.3e}, dissociation probability = {:.3e} \033[00m'.format(case.E0, proba))
