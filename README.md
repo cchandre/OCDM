@@ -53,7 +53,7 @@ ___
 - *frame*: string; 'fixed' or 'rotating'; specifies in which frame the numerical integration is performed
 - *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'bounded', 'cartesian' or 'spherical', 'fixed' or 'rotating'] for the type of trajectories to be plotted and/or saved
 - *dpi*: integer; dpi value for the figures 
-- *criterion*: string; 'exact' or 'distance'; criterion for dissociation
+- *criterion*: string; 'exact', 'distance' or 'angular_momentum'; criterion for dissociation
 ####
 - *SaveData*: boolean; if True, the results are saved in a `.mat` file (with the type specified in 'type_traj' for 'trajectories'); NB: the dissociation probabilities are saved in a `.txt` file regardless of the value of SaveData
 - *PlotResults*: boolean; if True, the results (for 'plot_potentials', 'plot_ZVS' and 'trajectories') are plotted right after the computation (with the type specified in 'type_traj' for 'trajectories')
