@@ -337,9 +337,12 @@ class DiaMol:
 				else:
 					dissociated[_] = True
 			return dissociated
-		elif self.dim == 2 and self.criterion == 'distance':
+		elif self.dim == 2:
 			r, phi, p_r, p_phi = xp.split(y_, 4)
-			return (r > 20)
+			if self.criterion == 'distance':
+				return (r > 20)
+			elif self.criterion == 'angular_momentum':
+				return (p_phi > 150)
 		elif self.dim == 3 and self.criterion == 'exact':
 			dissociated = xp.zeros(len(y_)//6, dtype=bool)
 			for _, (r, theta, phi, p_r, p_theta, p_phi) in enumerate(zip(*xp.split(y_, 6))):
@@ -354,9 +357,12 @@ class DiaMol:
 				else:
 					dissociated[_] = True
 			return dissociated
-		elif self.dim == 3 and self.criterion == 'distance':
+		elif self.dim == 3:
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
-			return (r > 20)
+			if self.criterion == 'distance':
+				return (r > 20)
+			elif self.criterion == 'angular_momentum':
+				return (p_phi > 150)
 
 	def cart2sph(self, y_):
 		if self.dim == 2:

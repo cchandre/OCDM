@@ -40,8 +40,8 @@ pcolor(phi,p_phi,Pf)
 shading flat
 hold on
 plot(-asin(mu_eff*beta/alpha2)/2,mu_eff*beta*ti,'ro','MarkerSize',8,'LineWidth',3)
-plot(pi/2+asin(mu_eff*beta/alpha2)/2,mu_eff*beta*ti,'rx','MarkerSize',8,'LineWidth',3)
-plot(-asin(mu_eff*beta/alpha2)/2+pi,mu_eff*beta*ti,'ro','MarkerSize',8,'LineWidth',3)
+%plot(pi/2+asin(mu_eff*beta/alpha2)/2,mu_eff*beta*ti,'rx','MarkerSize',8,'LineWidth',3)
+%plot(-asin(mu_eff*beta/alpha2)/2+pi,mu_eff*beta*ti,'ro','MarkerSize',8,'LineWidth',3)
 plot(pi/2+asin(mu_eff*beta/alpha2)/2-pi,mu_eff*beta*ti,'rx','MarkerSize',8,'LineWidth',3)
 colorbar
 set(gca,'box','on','FontSize',20,'LineWidth',2)
