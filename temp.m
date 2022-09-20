@@ -50,5 +50,16 @@ set(gca,'box','on','FontSize',20,'LineWidth',2)
 xlabel('$p_\phi$','interpreter','latex','FontSize',26)
 ylabel('$r^*$','interpreter','latex','FontSize',26)
 
+eta = 0.03;
+x = linspace(-15,15,512);
+p = linspace(-30,30,512);
+[X,P] = meshgrid(x,p);
+H = P.^2/2+X+1/eta*cos(X).^2;
+pcolor(X,P,H)
+colorbar
+shading flat
+hold on
+contour(X,P,H,[10, 50, 100, 200],'-k','LineWidth',2)
+
 
 
