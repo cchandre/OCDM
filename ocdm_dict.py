@@ -8,10 +8,10 @@ Method = 'dissociation'
 
 dimension = 2
 
-E0 = xp.linspace(0.01, 0.03, 300)
+E0 = xp.linspace(0.01, 0.03, 400)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
-te = [5, 40, 5]
+te = [5, 160, 5]
 
 Ntraj = 40000
 r = [2, 10]
@@ -21,16 +21,16 @@ EnergyPS = []
 EventPS = 'phi'
 ode_solver = 'BM4'
 ode_tol = [1e-7, 1e-7]
-ode_step = 2e-3
+ode_step = 1e-2
 frame = 'rotating'
 
-type_traj = ['dissociated', 'spherical', 'fixed']
-dpi = 1000
+type_traj = ['bounded', 'spherical', 'rotating']
+dpi = 2000
 criterion = 'exact'
 
 SaveData = False
 PlotResults = False
-Parallelization = (False, 50)
+Parallelization = (True, 50)
 
 darkmode = True
 

@@ -32,16 +32,31 @@ al_perp(r<=r_b(1)) = perp_s(r<=r_b(1));
 al_perp(r>=r_b(2)) = perp_l(r>=r_b(2));
 Dal = al_para-al_perp;
 
-figure, plot(r,potential,'k','LineWidth',3)
-figure, plot(r,al_perp,'r','LineWidth',3)
-hold on
-plot(r,al_para,'b','LineWidth',3)
+%figure, plot(r,potential,'k','LineWidth',3)
+%figure, plot(r,al_perp,'r','LineWidth',3)
+%hold on
+%plot(r,al_para,'b','LineWidth',3)
 
-E0 = 0.03;
-J = 30;
-p_phi = 350;
-Veff = potential+p_phi^2./(2*mu*r.^2);
-figure, plot(r,Veff,'m','LineWidth',3)
+
+p_phi = [0, 100, 200, 300, 400];
+colors = ['k', 'b', 'g', 'c', 'r'];
+r = linspace(2,7,N);
+potential = De * (1 - exp(-gam * (r - re))).^2 - De;
+p_st = sqrt(mu*r.^3*2*De*gam.*exp(-gam*(r-re)).*(1-exp(-gam*(r-re))));
+Veff_st = potential+p_st.^2./(2*mu*r.^2);
+figure
+for it = 1:length(p_phi)
+    Veff = potential+p_phi(it)^2./(2*mu*r.^2);
+    plot(r,Veff,colors(it),'LineWidth',3)
+    hold on
+end
+set(gca,'box','on','FontSize',20,'LineWidth',2)
+ylabel('$V_\mathrm{eff}$','interpreter','latex','FontSize',26)
+xlabel('$r$','interpreter','latex','FontSize',26)
+ylim([-0.1 0.2])
+plot(r(r<=4.87),Veff_st(r<=4.87),'k','LineWidth',2)
+plot(r(r>4.87),Veff_st(r>4.87),'k--','LineWidth',2)
+legend([string(p_phi) '' ''])
 
 r = linspace(re,7,512);
 p_phi = sqrt(mu*r.^3*2*De*gam.*exp(-gam*(r-re)).*(1-exp(-gam*(r-re))));
@@ -55,7 +70,7 @@ x = linspace(-15,15,512);
 p = linspace(-30,30,512);
 [X,P] = meshgrid(x,p);
 H = P.^2/2+X+1/eta*cos(X).^2;
-pcolor(X,P,H)
+figure, pcolor(X,P,H)
 colorbar
 shading flat
 hold on

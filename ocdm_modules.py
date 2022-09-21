@@ -130,7 +130,7 @@ def run_method(case):
                 yc = yc[xp.logical_not(xp.tile(dissociated, 2 * case.dim)), :]
             elif case.type_traj[0] != 'all' and (case.PlotResults or case.SaveData):
                 print('\033[33m          Warning: All trajectories are being displayed and/or saved \033[00m')
-            t_eval *= 2.42e-5
+            t_eval *= 2.418884254e-5
             if case.type_traj[0] == 'all':
                 save_data(case, xp.array([t_eval, yc[xp.tile(dissociated, 2 * case.dim), :], yc[xp.logical_not(xp.tile(dissociated, 2 * case.dim)), :]], dtype=object), filestr)
             else:
@@ -141,9 +141,7 @@ def run_method(case):
                 vec_data = [case.E0, proba]
                 file = open(type(case).__name__ + '_' + case.Method + '.txt', 'a')
                 if os.path.getsize(file.name) == 0:
-                    t = sp.symbols('t')
-                    beta = sp.diff(case.Omega(t), t)
-                    file.writelines('%   initial = {}       beta = {:.3e}    dim = {}    N = {}\n'.format(case.initial_conditions, beta, case.dim, case.Ntraj))
+                    file.writelines('%   initial = {}       beta = {:.3e}    dim = {}    N = {}\n'.format(case.initial_conditions, case.beta, case.dim, case.Ntraj))
                     file.writelines('%   env = {}     {} \n'.format(case.envelope, case.te))
                     file.writelines('%   E0           proba \n')
                 file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
@@ -187,6 +185,8 @@ def run_method(case):
                         axs[2].plot(t_eval, xp.sin(coord.transpose()), colors[k], label=labels[k][1], linestyle='dashed')
                     else:
                         axs[panels[k]].plot(t_eval, coord.transpose(), colors[k], label=labels[k])
+                r = xp.linspace(case.re, 4.25, case.dpi)
+                axs[1].plot(xp.sqrt(case.mu * r**3 * case.d_eps(r)) / (case.mu * r**2 * case.beta) * 2.418884254e-5, r, cs[1])
                 for ylabel, ax in zip(ylabels, axs):
                     handles, labels = ax.get_legend_handles_labels()
                     by_label = dict(zip(labels, handles))

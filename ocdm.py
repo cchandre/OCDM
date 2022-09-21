@@ -62,6 +62,7 @@ class DiaMol:
 		self.DictParams = dict
 		self.Omega = lambda t: Omega(t)
 		t = sp.symbols('t')
+		self.beta = sp.diff(self.Omega(t), t)
 		self.Phi = sp.lambdify(t, sp.integrate(self.Omega(t), t))
 		self.te_au = xp.asarray(self.te) / 2.418884254e-5
 		self.Step /= 2.418884254e-5
