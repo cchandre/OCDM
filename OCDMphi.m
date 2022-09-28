@@ -1,17 +1,18 @@
 function OCDMphi
 %%
-%% Last modified by Cristel Chandre (September 14, 2022)
+%% Last modified by Cristel Chandre (September 28, 2022)
 %% Comments? cristel.chandre@cnrs.fr 
 %%
 close all
 
-F0 = 0.013;
+F0 = 0.03;
 mu = 32548.53;
 re = 3.756;
 Dalpha = 17;
 beta = 3e-10;
 
 eta = 4*mu*re^2*beta/(F0^2*Dalpha);
+disp(eta)
 
 ti_ps = 5;
 tf_ps = 60;
@@ -46,15 +47,17 @@ colormap([flip(cmap1(2:end,:));cmap2])
 caxis([-40 40])
 shading flat
 hold on
-plot(-asin(eta)/2,0,'ro','MarkerSize',10,'LineWidth',2)
-plot(pi/2+asin(eta)/2,0,'rx','MarkerSize',10,'LineWidth',2)
-plot(-asin(eta)/2+pi,0,'ro','MarkerSize',10,'LineWidth',2)
-plot(pi/2+asin(eta)/2-pi,0,'rx','MarkerSize',10,'LineWidth',2)
+for k = -10:10
+    plot(-asin(eta)/2+k*pi,0,'ro','MarkerSize',10,'LineWidth',2)
+    plot(pi/2+asin(eta)/2+k*pi,0,'rx','MarkerSize',10,'LineWidth',2)
+end
 colorbar
 set(gca,'box','on','FontSize',20,'LineWidth',2)
 xlabel(['$x$(' num2str(ti_ps) ' ps)'],'interpreter','latex','FontSize',26)
 ylabel(['$p$(' num2str(ti_ps) ' ps)'],'interpreter','latex','FontSize',26)
 ylabel(colorbar,['$p$(' num2str(tf_ps) ' ps)'],'interpreter','latex','FontSize',26)
+xlim([min(x) max(x)])
+ylim([min(p) max(p)])
 
 %% Sample trajectories
 X = -asin(eta)/2 + [0 0 0];
