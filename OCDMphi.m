@@ -5,49 +5,93 @@ function OCDMphi
 %%
 close all
 
-F0 = 0.015;
-Delta_alpha = 10;
-r = 4;
+F0 = 0.013;
 mu = 32548.53;
+re = 3.756;
+Dalpha = 17;
 beta = 3e-10;
+
+eta = 4*mu*re^2*beta/(F0^2*Dalpha);
+
 ti_ps = 5;
-tf_ps = 20;
+tf_ps = 60;
+
+ti = ti_ps/2.418884254e-5*sqrt(beta);
+tf = tf_ps/2.418884254e-5*sqrt(beta);
 
 nx = 512;
 ny = 512;
+nt = 512;
 
 h = 1e-6;
-ti = ti_ps/2.418884254e-5;
-tf = tf_ps/2.418884254e-5;
 
-p_phi = linspace(-10,100,ny);
-phi = linspace(-pi,pi,nx);
-[Phi,P_phi] = meshgrid(phi,p_phi);
+%% Phase space diagram of the angular Hamiltonian model
+p = linspace(-10,10,ny);
+x = linspace(-10,10,nx);
+[X,P] = meshgrid(x,p);
 
-alpha2 = F0^2/4*Delta_alpha;
-mu_eff = mu*r^2;
-
-Phi = Phi(:);
-P_phi = P_phi(:);
-tspan = [ti ti+1 tf];
-Y0 = [Phi P_phi];
+X = X(:);
+P = P(:);
+tspan = [ti, tf/2, tf];
+Y0 = [X P];
 half = ceil(numel(Y0)/2);
 options = odeset('RelTol',h,'AbsTol',h);
-[~,yf] = ode45(@(t,y) [y(half+1:end)/mu_eff-beta*t; -alpha2*sin(2*y(1:half))],...
+[~,yf] = ode45(@(t,y) [y(half+1:end); -eta^(-1)*sin(2*y(1:half))-1],...
     tspan,Y0,options);
 Pf = reshape(yf(end,half+1:end),ny,nx);
-pcolor(phi,p_phi,Pf)
+imagesc(x,p,Pf)
+cmap1 = gray(256).*[0.68 0.85 0.9];
+cmap2 = flipud(1-gray(256)).*[1 0.8 0.8];
+colormap([flip(cmap1(2:end,:));cmap2])
+caxis([-40 40])
 shading flat
 hold on
-plot(-asin(mu_eff*beta/alpha2)/2,mu_eff*beta*ti,'ro','MarkerSize',8,'LineWidth',3)
-%plot(pi/2+asin(mu_eff*beta/alpha2)/2,mu_eff*beta*ti,'rx','MarkerSize',8,'LineWidth',3)
-%plot(-asin(mu_eff*beta/alpha2)/2+pi,mu_eff*beta*ti,'ro','MarkerSize',8,'LineWidth',3)
-plot(pi/2+asin(mu_eff*beta/alpha2)/2-pi,mu_eff*beta*ti,'rx','MarkerSize',8,'LineWidth',3)
+plot(-asin(eta)/2,0,'ro','MarkerSize',10,'LineWidth',2)
+plot(pi/2+asin(eta)/2,0,'rx','MarkerSize',10,'LineWidth',2)
+plot(-asin(eta)/2+pi,0,'ro','MarkerSize',10,'LineWidth',2)
+plot(pi/2+asin(eta)/2-pi,0,'rx','MarkerSize',10,'LineWidth',2)
 colorbar
 set(gca,'box','on','FontSize',20,'LineWidth',2)
-xlabel(['$\phi$(' num2str(ti_ps) 'ps)'],'interpreter','latex','FontSize',26)
-ylabel(['$p_\phi$(' num2str(ti_ps) 'ps)'],'interpreter','latex','FontSize',26)
-ylabel(colorbar,['$p_\phi$(' num2str(tf_ps) 'ps)'],'interpreter','latex','FontSize',26)
+xlabel(['$x$(' num2str(ti_ps) ' ps)'],'interpreter','latex','FontSize',26)
+ylabel(['$p$(' num2str(ti_ps) ' ps)'],'interpreter','latex','FontSize',26)
+ylabel(colorbar,['$p$(' num2str(tf_ps) ' ps)'],'interpreter','latex','FontSize',26)
+
+%% Sample trajectories
+X = -asin(eta)/2 + [0 0 0];
+P = [2.8 2.7 0];
+colors = ['b' 'r' 'k'];
+linewidth = [3 3 3];
+
+Y0 = [X P];
+tspan = linspace(ti,tf,nt);
+half = ceil(numel(Y0)/2);
+options = odeset('RelTol',h,'AbsTol',h);
+[~,yf] = ode45(@(t,y) [y(half+1:end); -eta^(-1)*sin(2*y(1:half))-1],...
+    tspan,Y0,options);
+t_au = tspan/sqrt(beta);
+half = length(X);
+p_phi = yf(:,half+1:end)*(mu*re^2*sqrt(beta));
+phi = yf(:,1:half);
+figure
+for it = 1:half
+    subplot(2,1,1)
+    plot(t_au*2.418884254e-5,p_phi(:,it)+mu*re^2*beta*t_au.',colors(it),'linewidth',3)
+    xlim([ti_ps tf_ps])
+    hold on
+    set(gca,'box','on','FontSize',20,'LineWidth',2)
+    xlabel('$t$ (ps)','interpreter','latex','FontSize',26)
+    ylabel('$p_\phi$ (a.u.)','interpreter','latex','FontSize',26)
+    subplot(2,1,2)
+    plot(t_au*2.418884254e-5,phi(:,it),colors(it),'linewidth',linewidth(it))
+    xlim([ti_ps tf_ps])
+    ylim([-3*pi pi])
+    hold on
+    set(gca,'box','on','FontSize',20,'LineWidth',2)
+    xlabel('$t$ (ps)','interpreter','latex','FontSize',26)
+    ylabel('$\phi$','interpreter','latex','FontSize',26)
+end
+
+
 %
 % Copyright (c) 2022 Cristel Chandre.
 % All rights reserved.
