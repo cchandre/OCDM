@@ -4,16 +4,16 @@
 
 import numpy as xp
 
-Method = 'dissociation'
+Method = 'trajectories'
 
 dimension = 2
 
-E0 = xp.linspace(0.01, 0.03, 400)
+E0 = xp.linspace(0.013, 0.013, 1)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
-te = [5, 160, 5]
+te = [5, 80, 5]
 
-Ntraj = 40000
+Ntraj = 20
 r = [2, 10]
 initial_conditions = ['microcanonical_J', 0, 30]
 spread3D = 0.1
@@ -24,13 +24,13 @@ ode_tol = [1e-7, 1e-7]
 ode_step = 1e-2
 frame = 'rotating'
 
-type_traj = ['bounded', 'spherical', 'rotating']
-dpi = 2000
+type_traj = ['dissociated', 'spherical', 'rotating']
+dpi = 3000
 criterion = 'exact'
 
 SaveData = False
-PlotResults = False
-Parallelization = (True, 50)
+PlotResults = True
+Parallelization = (False, 50)
 
 darkmode = True
 
