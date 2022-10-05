@@ -67,7 +67,7 @@ def run_method(case):
             print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
         plt.show()
     elif case.Method == 'plot_ZVS' and case.PlotResults:
-        filestr += '_' + 'E0{:.2e}'.format(case.E0).replace('.', '')
+        filestr += '_' + 'F0{:.2e}'.format(case.F0).replace('.', '')
         fig, ax = plt.subplots(1, 1)
         r = xp.linspace(case.r[0], case.r[1], case.dpi)
         phi = xp.linspace(0, 2*xp.pi, case.dpi)
@@ -137,13 +137,13 @@ def run_method(case):
                 save_data(case, xp.array([t_eval, yc], dtype=object), filestr)
             if case.Method == 'dissociation':
                 proba = dissociated.sum() / case.Ntraj
-                print('\033[96m          for E0 = {:.3e}, dissociation probability = {:.3e} \033[00m'.format(case.E0, proba))
-                vec_data = [case.E0, proba]
+                print('\033[96m          for F0 = {:.3e}, dissociation probability = {:.3e} \033[00m'.format(case.F0, proba))
+                vec_data = [case.F0, proba]
                 file = open(type(case).__name__ + '_' + case.Method + '.txt', 'a')
                 if os.path.getsize(file.name) == 0:
                     file.writelines('%   initial = {}       beta = {:.3e}    dim = {}    N = {}\n'.format(case.initial_conditions, case.beta, case.dim, case.Ntraj))
                     file.writelines('%   env = {}     {} \n'.format(case.envelope, case.te))
-                    file.writelines('%   E0           proba \n')
+                    file.writelines('%   F0           proba \n')
                 file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
                 file.close()
             elif case.Method == 'trajectories' and case.PlotResults:
@@ -194,7 +194,7 @@ def run_method(case):
                     ax.set_ylabel(ylabel, multialignment='center')
                 plt.show()
     elif case.Method == 'poincaré':
-        filestr += '_' + 'E0{:.2e}'.format(case.E0).replace('.', '')
+        filestr += '_' + 'F0{:.2e}'.format(case.F0).replace('.', '')
         t = sp.symbols('t')
         if sp.diff(case.Omega(t), t) != 0:
             print('\033[33m          Warning: The frequency Omega is not constant \033[00m')

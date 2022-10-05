@@ -54,7 +54,7 @@ class DiaMol:
 		return '{self.__class__.__name__}({self.DictParams})'.format(self=self)
 
 	def __str__(self):
-		return 'Optical Centrifuge for Diatomic Molecules ({}) with E0 = {:.3e}'.format(self.__class__.__name__, self.E0)
+		return 'Optical Centrifuge for Diatomic Molecules ({}) with F0 = {:.3e}'.format(self.__class__.__name__, self.F0)
 
 	def __init__(self, dict):
 		for key in dict:
@@ -100,7 +100,7 @@ class DiaMol:
 		self.d_al_perp = lambda r: xp.where(r<=r_b[0], d_perp_s(r), xp.where(r<=r_b[1], d_perp_m(r), d_perp_l(r)))
 		self.Dal = lambda r: self.al_para(r) - self.al_perp(r)
 		self.d_Dal = lambda r: d_al_para(r) - self.d_al_perp(r)
-		self.ZVS = lambda r, theta, phi, t: -self.mu * self.Omega(t)**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.E0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
+		self.ZVS = lambda r, theta, phi, t: -self.mu * self.Omega(t)**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.F0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
 		if self.ode_solver == 'Verlet':
 			self.alpha_o = [1, 0]
 			self.alpha_s = [0.5, 0.5]
@@ -110,7 +110,7 @@ class DiaMol:
 			self.alpha_s = xp.concatenate((alpha_s, alpha_s[::-1]))
 
 	def eqn_H(self, t, y_):
-		Eeff = self.E0**2 * self.env(t)**2 / 4
+		Eeff = self.F0**2 * self.env(t)**2 / 4
 		if self.dim == 2 and self.frame == 'rotating':
 			r, phi, p_r, p_phi = xp.split(y_, 4)
 			dr = p_r / self.mu
@@ -151,7 +151,7 @@ class DiaMol:
 			t_ += h
 			p_r += p_phi**2 / (self.mu * r**3) * h
 			phi += p_phi / (self.mu * r**2) * h - self.Omega(t_) * h
-			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			Eeff = self.F0**2 * self.env(t_)**2 / 4
 			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
 			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
 			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
@@ -164,7 +164,7 @@ class DiaMol:
 			phi += p_phi / (self.mu * r**2 * xp.sin(theta)**2) * h - self.Omega(t_) * h
 			p_r += p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) * h
 			p_theta += p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) * h
-			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			Eeff = self.F0**2 * self.env(t_)**2 / 4
 			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r)) * h
 			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2 * h
 			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi) * h
@@ -175,7 +175,7 @@ class DiaMol:
 			t_ += h
 			phi += p_phi / (self.mu * r**2) * h
 			p_r += p_phi**2 / (self.mu * r**3) * h
-			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			Eeff = self.F0**2 * self.env(t_)**2 / 4
 			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
 			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * (phi - self.Phi(t_))) * h
 			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
@@ -188,7 +188,7 @@ class DiaMol:
 			phi += p_phi / (self.mu * r**2 * xp.sin(theta)**2) * h
 			p_r += p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) * h
 			p_theta += p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) * h
-			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			Eeff = self.F0**2 * self.env(t_)**2 / 4
 			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
 			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi - self.Phi(t_))**2 * h
 			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * (phi - self.Phi(t_))) * h
@@ -197,7 +197,7 @@ class DiaMol:
 	def chi_star(self, h, t, y):
 		if self.dim == 2 and self.frame == 'rotating':
 			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
-			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			Eeff = self.F0**2 * self.env(t_)**2 / 4
 			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
 			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
 			phi += p_phi / (self.mu * r**2) * h - self.Omega(t_) * h
@@ -207,7 +207,7 @@ class DiaMol:
 			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
 		elif self.dim == 3 and self.frame == 'rotating':
 			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
-			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			Eeff = self.F0**2 * self.env(t_)**2 / 4
 			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r)) * h
 			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2 * h
 			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi) * h
@@ -221,7 +221,7 @@ class DiaMol:
 			return t_, xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
 		elif self.dim == 2 and self.frame == 'fixed':
 			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
-			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			Eeff = self.F0**2 * self.env(t_)**2 / 4
 			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
 			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * (phi - self.Phi(t_))) * h
 			phi += p_phi / (self.mu * r**2) * h
@@ -231,7 +231,7 @@ class DiaMol:
 			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
 		elif self.dim == 3 and self.frame == 'fixed':
 			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
-			Eeff = self.E0**2 * self.env(t_)**2 / 4
+			Eeff = self.F0**2 * self.env(t_)**2 / 4
 			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
 			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi - self.Phi(t_))**2 * h
 			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * (phi - self.Phi(t_))) * h
@@ -255,7 +255,7 @@ class DiaMol:
 
 	def energy(self, t, y_, field=True):
 		if field:
-			Eeff = self.E0**2 * self.env(t)**2 / 4
+			Eeff = self.F0**2 * self.env(t)**2 / 4
 		if self.dim == 2:
 			if len(y_) > 2 * self.dim:
 				r, phi, p_r, p_phi = xp.split(y_, 4)
