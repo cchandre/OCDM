@@ -26,7 +26,7 @@ ___
 - *Method*: string
    - 'plot_potentials': plot the potential &epsilon;(*r*) and polarizabilities &alpha;(*r*)
    - 'plot_ZVS': plot zero velocity functions
-   - 'dissociation': computes the dissociation probability as a function of the amplitude *F0*
+   - 'dissociation': computes the dissociation probability as a function of the amplitude *F*<sub>0</sub>
    - 'trajectories': computes and displays the trajectories according to *type_traj*
    - 'poincaré'; Poincaré section is *&phi;*=0 (mod 2 &pi;) with *&phi;'*<0 in the plane (*r*,*p*<sub>*r*</sub>) if *EventPS*='phi', and *p<sub>*r*</sub> =0 with *p<sub>*r*</sub>'<0 in the plane (*&phi;*,*p*<sub>*&phi;*</sub>) if *EventPS*='phi'
 - *dimension*: 2 or 3; dimension of the computation
