@@ -305,11 +305,11 @@ class DiaMol:
 					return xp.concatenate((r, theta[0], phi[0], p_r, p_theta, p_phi), axis=None)
 			elif self.initial_conditions[0] == 'microcanonical_J':
 				p0 = xp.sqrt(self.initial_conditions[2] * (self.initial_conditions[2] + 1))
-				Energy0 = self.we * (self.initial_conditions[1] + 0.5) + self.Be * p0**2 - self.De
+				E0 = self.we * (self.initial_conditions[1] + 0.5) + self.Be * p0**2 - self.De
 				phi = 2 * xp.pi * xp.random.random(N) - xp.pi
 				func = lambda r: p0**2 / (2 * self.mu * r**2) + self.eps(r)
-				r = self.generate_r(func, Energy0, N, self.r)
-				p_r = (2 * xp.random.randint(0, 2, N) - 1) * xp.sqrt(2 * self.mu * (Energy0 - self.eps(r)) - p0**2 / r**2)
+				r = self.generate_r(func, E0, N, self.r)
+				p_r = (2 * xp.random.randint(0, 2, N) - 1) * xp.sqrt(2 * self.mu * (E0 - self.eps(r)) - p0**2 / r**2)
 				if self.dim == 2:
 					p_phi = p0 * xp.ones(N)
 					return xp.concatenate((r, phi, p_r, p_phi), axis=None)
@@ -419,14 +419,14 @@ class DiaMol:
 	def mod(self, y_):
 		return self.cart2sph(self.sph2cart(y_))
 
-	def generate_r(self, func, Energy0, N, r):
-		if func(xp.linspace(r[0], r[1], 2**12)).min() > Energy0:
+	def generate_r(self, func, E0, N, r):
+		if func(xp.linspace(r[0], r[1], 2**12)).min() > E0:
 			raise ValueError('Empty energy surface')
 		else:
 			vec = []
 			while len(vec) <= N:
 				vec_t = (r[1] - r[0]) * xp.random.random(N) + r[0]
-				vec = xp.hstack((vec, vec_t[func(vec_t)<=Energy0]))
+				vec = xp.hstack((vec, vec_t[func(vec_t)<=E0]))
 			return vec[:N]
 
 if __name__ == "__main__":
