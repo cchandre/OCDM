@@ -13,16 +13,16 @@ if strcmp(strtrim(type_traj(1,:)),'all')
     Pd = data{1,2}(3*Nd+1:end,end);
     Pu = data{1,3}(3*Nu+1:end,end);
     Pu = Pu(Pu>=150);
-    figure, histogram(Pd,Nbin,'Normalization','probability')
-    hold on, histogram(Pu,Nbin,'Normalization','probability')
+    figure, histogram(Pd,Nbin,'Normalization','pdf')
+    hold on, histogram(Pu,Nbin,'Normalization','pdf')
 else
     N = length(data{1,2}(:,1))/4;
     P = data{1,2}(3*N+1:end,end);
-    figure, histogram(P,Nbin,'Normalization','probability')
+    figure, histogram(P,Nbin,'Normalization','pdf')
 end
 set(gca,'box','on','FontSize',20,'LineWidth',2)
 xlabel('$p_\phi$ (a.u.)','interpreter','latex','FontSize',26)
-ylabel('probability','FontSize',26)
+ylabel('PDF','FontSize',26)
 
 %
 % Copyright (c) 2022 Cristel Chandre.

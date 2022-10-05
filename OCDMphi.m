@@ -5,14 +5,14 @@ function OCDMphi
 %%
 close all
 
-F0 = 0.03;
+F0 = 0.013;
 mu = 32548.53;
 re = 3.756;
 Dalpha = 17;
 beta = 3e-10;
 
 eta = 4*mu*re^2*beta/(F0^2*Dalpha);
-disp(eta)
+eta = 0.17;
 
 ti_ps = 5;
 tf_ps = 60;

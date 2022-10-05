@@ -15,8 +15,11 @@ r_b = [3 6];
 al_Cl = 15.5421;
 al_Cl2 = 2 * 15.5421;
 
+F0 = 0.013;
+beta = 3e-10;
+
 N = 2048;
-r = linspace(2, 10, N);
+r = linspace(3.5, 5, N);
 potential = De * (1 - exp(-gam * (r - re))).^2 - De;
 para_s = a_s(1)+a_s(2)*(r-re)+a_s(3)*(r-re).^2+a_s(4)*(r-re).^3;
 perp_s = b_s(1)+b_s(2)*(r-re)+b_s(3)*(r-re).^2+b_s(4)*(r-re).^3;
@@ -36,6 +39,13 @@ Dal = al_para-al_perp;
 %figure, plot(r,al_perp,'r','LineWidth',3)
 %hold on
 %plot(r,al_para,'b','LineWidth',3)
+
+
+eta = 4*mu*r.^2*beta./(F0^2*Dal);
+figure, plot(r,eta,'-','linewidth',3)
+set(gca,'box','on','FontSize',20,'LineWidth',2)
+xlabel('$r$','interpreter','latex','FontSize',26)
+ylabel('$\eta$','interpreter','latex','FontSize',26)
 
 
 p_phi = [0, 100, 200, 300, 400];
@@ -77,4 +87,19 @@ hold on
 contour(X,P,H,[10, 50, 100, 200],'-k','LineWidth',2)
 
 
+eta = 0.19;
+xu = pi/2+asin(eta)/2;
+x = linspace(xu,2.39*xu,512);
+p_p = sqrt(2)*(xu-eta^(-1)*cos(xu)^2-x+eta^(-1)*cos(x).^2).^0.5;
+p_m = -sqrt(2)*(xu-eta^(-1)*cos(xu)^2-x+eta^(-1)*cos(x).^2).^0.5;
+figure, plot(x,p_p,'b','linewidth',3)
+hold on 
+plot(x,p_m,'b','linewidth',3)
 
+eta = 0.17;
+xu = pi/2+asin(eta)/2;
+x = linspace(xu,2.43*xu,512);
+p_p = sqrt(2)*(xu-eta^(-1)*cos(xu)^2-x+eta^(-1)*cos(x).^2).^0.5;
+p_m = -sqrt(2)*(xu-eta^(-1)*cos(xu)^2-x+eta^(-1)*cos(x).^2).^0.5;
+plot(x,p_p,'r','linewidth',3)
+plot(x,p_m,'r','linewidth',3)
