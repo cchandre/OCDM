@@ -55,7 +55,7 @@ ___
 - *dpi*: integer; dpi value for the figures 
 - *criterion*: string; 'exact', 'distance' or 'angular_momentum'; criterion for dissociation
 ####
-- *SaveData*: boolean; if True, the results are saved in a `.mat` file (with the type specified in 'type_traj' for 'trajectories'); NB: the dissociation probabilities are saved in a `.txt` file regardless of the value of SaveData
+- *SaveData*: boolean; if True, the results are saved in a `.mat` file (with the type specified in 'type_traj'); if Method='dissociation', the trajectories are saved at *t*=0, *t*=*t*<sub>u</sub>, *t*=*t*<sub>u</sub>+*t*<sub>p</sub> and *t*=*t*<sub>u</sub>+*t*<sub>p</sub>+*t*<sub>d</sub>; if Method='trajectories', the trajectories are saved with 'dpi' equispaced times from *t*=0 to *t*=*t*<sub>u</sub>+*t*<sub>p</sub>+*t*<sub>d</sub>; NB: the dissociation probabilities are saved in a `.txt` file regardless of the value of SaveData
 - *PlotResults*: boolean; if True, the results (for 'plot_potentials', 'plot_ZVS' and 'trajectories') are plotted right after the computation (with the type specified in 'type_traj' for 'trajectories')
 - *Parallelization*: tuple (boolean, int); True for parallelization, int is the number of cores to be used or int='all' to use all available cores
 - *darkmode*: boolean; if True, plots are done in dark mode
