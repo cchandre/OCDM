@@ -85,28 +85,30 @@ def run_method(case):
         plt.show()
     elif case.Method in ['dissociation', 'trajectories']:
         y0 = case.initcond(case.Ntraj)
-        if case.Method == 'dissociation':
-            t_eval = xp.asarray([0.0, case.te_au.sum()])
         if xp.any(y0):
             start = time.time()
             if case.ode_solver in ['RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA']:
-                t_eval = xp.linspace(0, case.te_au.sum(), case.dpi)
+                if case.Method == 'dissociation':
+                    t_eval = xp.insert(case.te_au.cumsum(), 0, 0.0)
+                elif case.Method == 'trajectories':
+                    t_eval = xp.linspace(0, case.te_au.sum(), case.dpi)
                 sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, method=case.ode_solver, t_eval=t_eval, atol=case.Tol[0], rtol=case.Tol[1])
                 yf = sol.y
             elif case.ode_solver in ['Verlet', 'BM4']:
                 nstep = int((case.te_au.sum() / case.Step) // 1) + 1
+                h = case.te_au.sum() / nstep
                 eval = xp.zeros(nstep, dtype=bool)
                 if case.Method == 'dissociation':
-                    eval[-1] = True
+                    t_eval = xp.insert(case.te_au.cumsum(), 0, 0.0)
+                    eval[xp.floor(case.te_au.cumsum() / h).astype(int) - 1] = True
                 elif case.Method == 'trajectories':
                     if case.dpi >= nstep:
+                        t_eval = xp.linspace(0, case.te_au.sum(), nstep + 1)
                         eval = xp.ones(nstep, dtype=bool)
-                        t_eval = xp.linspace(0, case.te_au.sum(), nstep)
                     else:
-                        eval[-1::-(nstep // case.dpi)] = True
-                        tvec = xp.linspace(0, case.te_au.sum(), nstep)
+                        tvec = xp.linspace(0, case.te_au.sum(), case.dpi)
                         t_eval = xp.insert(xp.flip(tvec[-1::-(nstep // case.dpi)]), 0, 0.0)
-                h = case.te_au.sum() / nstep
+                        eval[-1::-(nstep // case.dpi)] = True
                 t, y = 0.0, y0.copy()
                 yf = y0.copy()
                 for _ in range(nstep):

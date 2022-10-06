@@ -11,9 +11,9 @@ dimension = 2
 F0 = xp.linspace(0.013, 0.013, 1)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
-te = [5, 200, 5]
+te = [5, 60, 5]
 
-Ntraj = 1000000
+Ntraj = 40000
 r = [2, 10]
 initial_conditions = ['microcanonical_J', 0, 30]
 spread3D = 0.1
