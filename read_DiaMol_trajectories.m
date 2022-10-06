@@ -1,32 +1,74 @@
 function read_DiaMol_trajectories
 %%
-%% Last modified by Cristel Chandre (September 13, 2022)
+%% Last modified by Cristel Chandre (October 6, 2022)
 %% Comments? cristel.chandre@cnrs.fr 
 %%
 close all
 [filename, path] = uigetfile('*.mat');
-load([path filename]);
+load([path filename],'data','dim','Method','mu','beta');
 dim = double(dim);
-t = data{1};
-n_t = length(t);
-n_d = length(data{2}(:,1))/(2*dim);
-n_b = length(data{3}(:,1))/(2*dim);
-y_d = reshape(data{2},[n_d,2*dim,n_t]);
-y_b = reshape(data{3},[n_b,2*dim,n_t]);
-if dim==2
-    labels = {'$r$','$\phi$','$p_r$','$p_\phi$'};
+t = data{1,1};
+data = data(~cellfun('isempty',data));
+if length(data)==3
+    n_t = length(t);
+    n_d = length(data{1,2}(:,1))/(2*dim);
+    n_b = length(data{1,3}(:,1))/(2*dim);
+    y_d = reshape(data{1,2},[n_d,2*dim,n_t]);
+    y_b = reshape(data{1,3},[n_b,2*dim,n_t]);
+    if strcmp(strtrim(Method),'trajectories')
+        if dim==2
+            labels = {'$r$','$\phi$','$p_r$','$p_\phi$'};
+        else
+            labels = {'$r$','$\theta$','$\phi$','$p_r$','$p_\theta$','$p_\phi$'};
+        end
+        for it = 1:2*dim
+            subplot(2*dim,1,it)
+            plot(t,reshape(y_d(:,it,:),[n_d,n_t]),'r','LineWidth',2)
+            hold on
+            plot(t,reshape(y_b(:,it,:),[n_b,n_t]),'b','LineWidth',2)
+            set(gca,'box','on','FontSize',20,'LineWidth',2)
+            xlabel('$t$ (ps)','interpreter','latex','FontSize',26)
+            ylabel(labels{it},'interpreter','latex','FontSize',26)
+            xlim([min(t), max(t)])
+        end
+    elseif strcmp(strtrim(Method),'dissociation')
+        for it = 1:n_t
+            figure, plot(y_d(:,2,it),y_d(:,4,it)-mu*y_d(:,1:it).^2*beta*t(it),'r.')
+            hold on
+            figure, plot(y_b(:,2,it),y_b(:,4,it)-mu*y_b(:,1:it).^2*beta*t(it),'b.')
+            hold off
+            set(gca,'box','on','FontSize',20,'LineWidth',2)
+            xlabel('$\phi$','interpreter','latex','FontSize',26)
+            ylabel('$\tilde{p}_\phi$',interpreter','latex','FontSize',26)
+        end
+    end
 else
-    labels = {'$r$','$\theta$','$\phi$','$p_r$','$p_\theta$','$p_\phi$'};
-end
-for it = 1:2*dim
-    subplot(2*dim,1,it)
-    plot(t,reshape(y_d(:,it,:),[n_d,n_t]),'r','LineWidth',2)
-    hold on
-    plot(t,reshape(y_b(:,it,:),[n_b,n_t]),'b','LineWidth',2)
-    set(gca,'box','on','FontSize',20,'LineWidth',2)
-    xlabel('$t$ (ps)','interpreter','latex','FontSize',26)
-    ylabel(labels{it},'interpreter','latex','FontSize',26)
-    xlim([min(t), max(t)])
+    n_t = length(t);
+    n = length(data{1,2}(:,1))/(2*dim);
+    y = reshape(data{1,2},[n,2*dim,n_t]);
+    if strcmp(strtrim(Method),'trajectories')
+        if dim==2
+            labels = {'$r$','$\phi$','$p_r$','$p_\phi$'};
+        else
+            labels = {'$r$','$\theta$','$\phi$','$p_r$','$p_\theta$','$p_\phi$'};
+        end
+        for it = 1:2*dim
+            subplot(2*dim,1,it)
+            plot(t,reshape(y(:,it,:),[n,n_t]),'b','LineWidth',2)
+            set(gca,'box','on','FontSize',20,'LineWidth',2)
+            xlabel('$t$ (ps)','interpreter','latex','FontSize',26)
+            ylabel(labels{it},'interpreter','latex','FontSize',26)
+            xlim([min(t), max(t)])
+        end
+    elseif strcmp(strtrim(Method),'dissociation')
+        for it = 1:n_t
+            figure, plot(y(:,2,it),y(:,4,it)-mu*y(:,1:it).^2*beta*t(it),'b.')
+            title(['distribution at $t = $' num2str(t(it)) ' ps'],'interpreter','latex')
+            set(gca,'box','on','FontSize',20,'LineWidth',2)
+            xlabel('$\phi$','interpreter','latex','FontSize',26)
+            ylabel('$\tilde{p}_\phi$','interpreter','latex','FontSize',26)
+        end
+    end
 end
 %
 % Copyright (c) 2022 Cristel Chandre.
