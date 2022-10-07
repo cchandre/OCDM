@@ -3,6 +3,7 @@ function read_DiaMol_trajectories
 %% Last modified by Cristel Chandre (October 6, 2022)
 %% Comments? cristel.chandre@cnrs.fr 
 %%
+choice_repr = 'pphi'; % options are 'pphi' or 'p' (rescaled)
 close all
 [filename, path] = uigetfile('*.mat');
 load([path filename],'data','dim','Method','mu','beta');
@@ -15,6 +16,11 @@ if length(data)==3
     n_b = length(data{1,3}(:,1))/(2*dim);
     y_d = reshape(data{1,2},[n_d,2*dim,n_t]);
     y_b = reshape(data{1,3},[n_b,2*dim,n_t]);
+    Pend = y_b(:,4,end);
+    y_c = y_b(Pend<=150,:,:);
+    n_c = length(y_c(:,1,1));
+    y_l = y_b(Pend>=150,:,:);
+    n_l = length(y_l(:,1,1));
     if strcmp(strtrim(Method),'trajectories')
         if dim==2
             labels = {'$r$','$\phi$','$p_r$','$p_\phi$'};
@@ -25,21 +31,34 @@ if length(data)==3
             subplot(2*dim,1,it)
             plot(t,reshape(y_d(:,it,:),[n_d,n_t]),'r','LineWidth',2)
             hold on
-            plot(t,reshape(y_b(:,it,:),[n_b,n_t]),'b','LineWidth',2)
+            plot(t,reshape(y_l(:,it,:),[n_l,n_t]),'b','LineWidth',2)
+            plot(t,reshape(y_c(:,it,:),[n_c,n_t]),'k','LineWidth',2)
             set(gca,'box','on','FontSize',20,'LineWidth',2)
             xlabel('$t$ (ps)','interpreter','latex','FontSize',26)
             ylabel(labels{it},'interpreter','latex','FontSize',26)
             xlim([min(t), max(t)])
         end
     elseif strcmp(strtrim(Method),'dissociation')
+        labels = {'$t=0$','end of ramp-up','end of plateau','$t=t_\mathrm{f}$'};
         for it = 1:n_t
-            figure, plot(y_d(:,2,it),y_d(:,4,it)-mu*y_d(:,1:it).^2*beta*t(it),'r.')
-            hold on
-            figure, plot(y_b(:,2,it),y_b(:,4,it)-mu*y_b(:,1:it).^2*beta*t(it),'b.')
+            if strcmp(choice_repr,'p')
+                figure, plot(y_d(:,2,it),(y_d(:,4,it)-mu*y_d(:,1,it).^2*beta*t(it)/2.418884254e-5)./(mu*sqrt(beta)*y_d(:,1,it).^2),'r.')
+                hold on
+                plot(y_l(:,2,it),(y_l(:,4,it)-mu*y_l(:,1,it).^2*beta*t(it)/2.418884254e-5)./(mu*sqrt(beta)*y_l(:,1,it).^2),'b.')
+                plot(y_c(:,2,it),(y_c(:,4,it)-mu*y_c(:,1,it).^2*beta*t(it)/2.418884254e-5)./(mu*sqrt(beta)*y_c(:,1,it).^2),'k.')
+                ylabel('$p$','interpreter','latex','FontSize',26)
+            elseif strcmp(choice_repr,'pphi')
+                figure, plot(y_d(:,2,it),y_d(:,4,it),'r.')
+                hold on
+                plot(y_l(:,2,it),y_l(:,4,it),'b.')
+                plot(y_c(:,2,it),y_c(:,4,it),'k.')
+                ylabel('$p_\phi$','interpreter','latex','FontSize',26)
+            end
             hold off
+            title(['distribution at ' labels{it}],'interpreter','latex')
             set(gca,'box','on','FontSize',20,'LineWidth',2)
             xlabel('$\phi$','interpreter','latex','FontSize',26)
-            ylabel('$\tilde{p}_\phi$',interpreter','latex','FontSize',26)
+            xlim([-pi pi])
         end
     end
 else
@@ -61,12 +80,19 @@ else
             xlim([min(t), max(t)])
         end
     elseif strcmp(strtrim(Method),'dissociation')
+        labels = {'$t=0$','end of ramp-up','end of plateau','$t=t_\mathrm{f}$'};
         for it = 1:n_t
-            figure, plot(y(:,2,it),y(:,4,it)-mu*y(:,1:it).^2*beta*t(it),'b.')
-            title(['distribution at $t = $' num2str(t(it)) ' ps'],'interpreter','latex')
+            if strcmp(choice_repr,'p')
+                figure, plot(y(:,2,it),(y(:,4,it)-mu*y(:,1,it).^2*beta*t(it)/2.418884254e-5)./(mu*sqrt(beta)*y(:,1,it).^2),'b.')
+                ylabel('$p$','interpreter','latex','FontSize',26)
+            elseif strcmp(choice_repr,'pphi')
+                figure, plot(y(:,2,it),y(:,4,it),'b.')
+                ylabel('$p_\phi$','interpreter','latex','FontSize',26)
+            end
+            title(['distribution at ' labels{it}],'interpreter','latex')
             set(gca,'box','on','FontSize',20,'LineWidth',2)
             xlabel('$\phi$','interpreter','latex','FontSize',26)
-            ylabel('$\tilde{p}_\phi$','interpreter','latex','FontSize',26)
+            xlim([-pi pi])
         end
     end
 end
