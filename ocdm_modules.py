@@ -95,7 +95,7 @@ def run_method(case):
                 sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, method=case.ode_solver, t_eval=t_eval, atol=case.Tol[0], rtol=case.Tol[1])
                 yf = sol.y
             elif case.ode_solver in ['Verlet', 'BM4']:
-                nstep = int((case.te_au.sum() / case.Step) // 1) + 1
+                nstep = int((case.te_au.sum() / case.Step) // 1)
                 h = case.te_au.sum() / nstep
                 eval = xp.zeros(nstep, dtype=bool)
                 if case.Method == 'dissociation':
@@ -106,9 +106,10 @@ def run_method(case):
                         t_eval = xp.linspace(0, case.te_au.sum(), nstep + 1)
                         eval = xp.ones(nstep, dtype=bool)
                     else:
-                        tvec = xp.linspace(0, case.te_au.sum(), case.dpi)
-                        t_eval = xp.insert(xp.flip(tvec[-1::-(nstep // case.dpi)]), 0, 0.0)
-                        eval[-1::-(nstep // case.dpi)] = True
+                        dpi = case.dpi - 1
+                        tvec = xp.linspace(0, case.te_au.sum(), nstep + 1)
+                        t_eval = xp.flip(tvec[-1::-(nstep // dpi)])
+                        eval[-1::-(nstep // dpi)] = True
                 t, y = 0.0, y0.copy()
                 yf = y0.copy()
                 for _ in range(nstep):
