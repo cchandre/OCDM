@@ -4,9 +4,11 @@ function read_DiaMol_trajectories
 %% Comments? cristel.chandre@cnrs.fr 
 %%
 choice_repr = 'pphi'; % options are 'pphi' or 'p' (rescaled)
+method = 'phase_diag'; % options are 'phase_diag' or 'time_series' 
+limit = [];
 close all
 [filename, path] = uigetfile('*.mat');
-load([path filename],'data','dim','Method','mu','beta');
+load([path filename],'data','dim','mu','beta');
 dim = double(dim);
 t = data{1,1};
 data = data(~cellfun('isempty',data));
@@ -21,7 +23,7 @@ if length(data)==3
     n_c = length(y_c(:,1,1));
     y_l = y_b(Pend>=150,:,:);
     n_l = length(y_l(:,1,1));
-    if strcmp(strtrim(Method),'trajectories')
+    if strcmp(method,'time_series')
         if dim==2
             labels = {'$r$','$\phi$','$p_r$','$p_\phi$'};
         else
@@ -38,8 +40,7 @@ if length(data)==3
             ylabel(labels{it},'interpreter','latex','FontSize',26)
             xlim([min(t), max(t)])
         end
-    elseif strcmp(strtrim(Method),'dissociation')
-        labels = {'$t=0$','end of ramp-up','end of plateau','$t=t_\mathrm{f}$'};
+    elseif strcmp(method,'phase_diag')
         for it = 1:n_t
             if strcmp(choice_repr,'p')
                 figure, plot(y_d(:,2,it),(y_d(:,4,it)-mu*y_d(:,1,it).^2*beta*t(it)/2.418884254e-5)./(mu*sqrt(beta)*y_d(:,1,it).^2),'r.')
@@ -55,17 +56,22 @@ if length(data)==3
                 ylabel('$p_\phi$','interpreter','latex','FontSize',26)
             end
             hold off
-            title(['distribution at ' labels{it}],'interpreter','latex')
+            title(['$t =$ ' num2str(t(it))],'interpreter','latex')
             set(gca,'box','on','FontSize',20,'LineWidth',2)
             xlabel('$\phi$','interpreter','latex','FontSize',26)
             xlim([-pi pi])
+            if ~isempty(limit)
+                ylim(limit)
+            end
+            pause(0.5)
+            exportgraphics(gcf,'DiaMol.gif','Append',true);
         end
     end
 else
     n_t = length(t);
     n = length(data{1,2}(:,1))/(2*dim);
     y = reshape(data{1,2},[n,2*dim,n_t]);
-    if strcmp(strtrim(Method),'trajectories')
+    if strcmp(method,'time_series')
         if dim==2
             labels = {'$r$','$\phi$','$p_r$','$p_\phi$'};
         else
@@ -79,8 +85,7 @@ else
             ylabel(labels{it},'interpreter','latex','FontSize',26)
             xlim([min(t), max(t)])
         end
-    elseif strcmp(strtrim(Method),'dissociation')
-        labels = {'$t=0$','end of ramp-up','end of plateau','$t=t_\mathrm{f}$'};
+    elseif strcmp(method,'phase_diag')
         for it = 1:n_t
             if strcmp(choice_repr,'p')
                 figure, plot(y(:,2,it),(y(:,4,it)-mu*y(:,1,it).^2*beta*t(it)/2.418884254e-5)./(mu*sqrt(beta)*y(:,1,it).^2),'b.')
@@ -89,10 +94,15 @@ else
                 figure, plot(y(:,2,it),y(:,4,it),'b.')
                 ylabel('$p_\phi$','interpreter','latex','FontSize',26)
             end
-            title(['distribution at ' labels{it}],'interpreter','latex')
+            title(['$t =$ ' num2str(t(it))],'interpreter','latex')
             set(gca,'box','on','FontSize',20,'LineWidth',2)
             xlabel('$\phi$','interpreter','latex','FontSize',26)
             xlim([-pi pi])
+            if ~isempty(limit)
+                ylim(limit)
+            end
+            pause(0.5)
+            exportgraphics(gcf,'DiaMol.gif','Append',true);
         end
     end
 end
