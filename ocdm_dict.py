@@ -8,12 +8,12 @@ Method = 'dissociation'
 
 dimension = 2
 
-F0 = xp.linspace(0.013, 0.013, 1)
+F0 = xp.linspace(0.008, 0.03, 500)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
-te = [5, 60, 5]
+te = [5, 40, 5]
 
-Ntraj = 40000
+Ntraj = 100000
 r = [2, 10]
 initial_conditions = ['microcanonical_J', 0, 30]
 spread3D = 0.1
@@ -25,12 +25,11 @@ ode_step = 1e-2
 frame = 'rotating'
 
 type_traj = ['all', 'spherical', 'rotating']
-dpi = 3000
-criterion = 'exact'
+dpi = 1024
 
-SaveData = True
+SaveData = False
 PlotResults = False
-Parallelization = (False, 50)
+Parallelization = (True, 100)
 
 darkmode = True
 
@@ -60,7 +59,7 @@ for dict, F in zip(dict_list, xp.atleast_1d(F0)):
         'EnergyPS': EnergyPS,
         'EventPS': EventPS,
         'type_traj': type_traj,
-        'dpi': dpi,
+        'dpi': dpi if dpi >= 2 else 2,
         'SaveData': SaveData,
         'PlotResults': PlotResults,
         'darkmode': darkmode,
@@ -68,6 +67,5 @@ for dict, F in zip(dict_list, xp.atleast_1d(F0)):
         'ode_solver': ode_solver,
         'Tol': ode_tol,
         'Step': ode_step,
-        'frame': frame,
-        'criterion': criterion})
+        'frame': frame})
 ###################################################################################################
