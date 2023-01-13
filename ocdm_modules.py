@@ -87,38 +87,31 @@ def run_method(case):
         y0 = case.initcond(case.Ntraj)
         if xp.any(y0):
             start = time.time()
+            if case.Method == 'dissociation':
+                t_eval = xp.array([0, case.te_au.sum()])
+            elif case.Method == 'trajectories':
+                t_eval = xp.linspace(0, case.te_au.sum(), case.dpi)
             if case.ode_solver in ['RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA']:
-                if case.Method == 'dissociation':
-                    t_eval = xp.insert(case.te_au.cumsum(), 0, 0.0)
-                elif case.Method == 'trajectories':
-                    t_eval = xp.linspace(0, case.te_au.sum(), case.dpi)
                 sol = solve_ivp(case.eqn_H, (t_eval[0], t_eval[-1]), y0, method=case.ode_solver, t_eval=t_eval, atol=case.Tol[0], rtol=case.Tol[1])
                 yf = sol.y
             elif case.ode_solver in ['Verlet', 'BM4']:
-                nstep = int((case.te_au.sum() / case.Step) // 1)
-                h = case.te_au.sum() / nstep
-                eval = xp.zeros(nstep, dtype=bool)
+                l = case.te_au.sum() / (case.dpi - 1)
+                h = l / xp.ceil(l / case.Step)
+                nstep = (case.dpi - 1) * int(xp.ceil(l / case.Step))
+                eval = xp.zeros(nstep + 1, dtype=bool)
                 if case.Method == 'dissociation':
-                    t_eval = xp.insert(case.te_au.cumsum(), 0, 0.0)
-                    eval[xp.floor(case.te_au.cumsum() / h).astype(int) - 1] = True
+                    eval[0], eval[-1] = True, True
                 elif case.Method == 'trajectories':
-                    if case.dpi >= nstep:
-                        t_eval = xp.linspace(0, case.te_au.sum(), nstep + 1)
-                        eval = xp.ones(nstep, dtype=bool)
-                    else:
-                        dpi = case.dpi - 1
-                        tvec = xp.linspace(0, case.te_au.sum(), nstep + 1)
-                        t_eval = xp.flip(tvec[-1::-(nstep // dpi)])
-                        eval[-1::-(nstep // dpi)] = True
+                    eval[::int(xp.ceil(l / case.Step))] = True
                 t, y = 0.0, y0.copy()
                 yf = y0.copy()
                 for _ in range(nstep):
                     t, y = case.eqn_sympl(h, t, y)
-                    if eval[_]:
+                    if eval[_ + 1]:
                         yf = xp.vstack((yf, y))
                 yf = yf.transpose()
             print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
-            dissociated = case.check_dissociation(yf[:, -1])
+            dissociated, typeL = case.check_type(yf[:, -1])
             if case.type_traj[1] == 'cartesian':
                 yc = case.sph2cart(yf)
             elif case.type_traj[1] == 'spherical':
@@ -139,14 +132,15 @@ def run_method(case):
             else:
                 save_data(case, xp.array([t_eval, yc], dtype=object), filestr)
             if case.Method == 'dissociation':
-                proba = dissociated.sum() / case.Ntraj
-                print('\033[96m          for F0 = {:.3e}, dissociation probability = {:.3e} \033[00m'.format(case.F0, proba))
-                vec_data = [case.F0, proba]
+                diss_proba = dissociated.sum() / case.Ntraj
+                typeL_proba = typeL.sum() / case.Ntraj
+                print('\033[96m          for F0 = {:.3e}, dissociation probability = {:.3e}, type-L probability = {:.3e} \033[00m'.format(case.F0, diss_proba, typeL_proba))
+                vec_data = [case.F0, diss_proba, typeL_proba]
                 file = open(type(case).__name__ + '_' + case.Method + '.txt', 'a')
                 if os.path.getsize(file.name) == 0:
                     file.writelines('%   initial = {}       beta = {:.3e}    dim = {}    N = {}\n'.format(case.initial_conditions, case.beta, case.dim, case.Ntraj))
                     file.writelines('%   env = {}     {} \n'.format(case.envelope, case.te))
-                    file.writelines('%   F0           proba \n')
+                    file.writelines('%   F0           diss_proba     typeL_proba \n')
                 file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
                 file.close()
             elif case.Method == 'trajectories' and case.PlotResults:

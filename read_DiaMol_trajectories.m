@@ -1,12 +1,13 @@
 function read_DiaMol_trajectories
 %%
-%% Last modified by Cristel Chandre (October 6, 2022)
+%% Last modified by Cristel Chandre (January 13, 2023)
 %% Comments? cristel.chandre@cnrs.fr 
 %%
 choice_repr = 'pphi'; % options are 'pphi' or 'p' (rescaled)
-method = 'phase_diag'; % options are 'phase_diag' or 'time_series' 
+method = 'time_series'; % options are 'phase_diag' or 'time_series' 
+variables = [1,4]; % indices of the variables to be displayed (r, phi, pr, pphi)
 limit = [];
-close all
+%close all
 [filename, path] = uigetfile('*.mat');
 load([path filename],'data','dim','mu','beta');
 dim = double(dim);
@@ -29,15 +30,15 @@ if length(data)==3
         else
             labels = {'$r$','$\theta$','$\phi$','$p_r$','$p_\theta$','$p_\phi$'};
         end
-        for it = 1:2*dim
-            subplot(2*dim,1,it)
-            plot(t,reshape(y_d(:,it,:),[n_d,n_t]),'r','LineWidth',2)
+        for it = 1:length(variables)
+            subplot(length(variables),1,it)
+            plot(t,reshape(y_d(:,variables(it),:),[n_d,n_t]),'r','LineWidth',2)
             hold on
-            plot(t,reshape(y_l(:,it,:),[n_l,n_t]),'b','LineWidth',2)
-            plot(t,reshape(y_c(:,it,:),[n_c,n_t]),'k','LineWidth',2)
+            plot(t,reshape(y_l(:,variables(it),:),[n_l,n_t]),'b','LineWidth',2)
+            plot(t,reshape(y_c(:,variables(it),:),[n_c,n_t]),'k','LineWidth',2)
             set(gca,'box','on','FontSize',20,'LineWidth',2)
             xlabel('$t$ (ps)','interpreter','latex','FontSize',26)
-            ylabel(labels{it},'interpreter','latex','FontSize',26)
+            ylabel(labels{variables(it)},'interpreter','latex','FontSize',26)
             xlim([min(t), max(t)])
         end
     elseif strcmp(method,'phase_diag')
