@@ -19,7 +19,7 @@ or
 ```sh
 nohup python3 -u ocdm.py &>ocdm.out < /dev/null &
 ```
-The list of Python packages and their version are specified in [`requirements.txt`](https://github.com/cchandre/OCDM/blob/main/requirements.txt)
+The list of Python packages and their version are specified in [`requirements.txt`](https://github.com/cchandre/OCDM/blob/main/requirements.txt). The code is using NumPy, SciPy, SymPy and Matplotlib. 
 ___
 ##  Parameter dictionary
 
