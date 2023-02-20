@@ -11,7 +11,7 @@ Optical Centrifuge for Diatomic Molecules (OCDM) - codes for the chlorine molecu
 
 - [`read_DiaMol_trajectories.m`](https://github.com/cchandre/OCDM/blob/main/read_DiaMol_trajectories.m): MATLAB script to plot the trajectories from the output files `DiaMol.mat`
 
-- [`read_DiaMol_pphi.m`](https://github.com/cchandre/OCDM/blob/main/read_DiaMol_pphis.m): MATLAB script to plot the distributions of *p*<sub>*&phi;*</sub> values from the output files `DiaMol.mat`
+- [`read_DiaMol_pphi.m`](https://github.com/cchandre/OCDM/blob/main/read_DiaMol_pphi.m): MATLAB script to plot the distributions of *p*<sub>*&phi;*</sub> values from the output files `DiaMol.mat`
 
 Once [`ocdm_dict.py`](https://github.com/cchandre/OCDM/blob/main/ocdm_dict.py) has been edited with the relevant parameters, run the file as 
 ```sh
