@@ -8,7 +8,7 @@ Method = 'dissociation'
 
 dimension = 2
 
-F0 = xp.linspace(0.008, 0.03, 500)
+F0 = xp.linspace(0.007, 0.03, 500)
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
 te = [5, 40, 5]
@@ -29,7 +29,7 @@ dpi = 1024
 
 SaveData = False
 PlotResults = False
-Parallelization = (True, 100)
+Parallelization = (True, 50)
 
 darkmode = True
 

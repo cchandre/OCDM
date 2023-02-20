@@ -6,15 +6,15 @@ function read_DiaMol_pphi
 
 [filename, path] = uigetfile('*.mat');
 load([path filename],'data','type_traj')
-Nbin = 100;
+Nbin = 200;
 if strcmp(strtrim(type_traj(1,:)),'all')
     Nd = length(data{1,2}(:,1))/4;
     Nu = length(data{1,3}(:,1))/4;
     Pd = data{1,2}(3*Nd+1:end,end);
     Pu = data{1,3}(3*Nu+1:end,end);
     Pu = Pu(Pu>=150);
-    figure, histogram(Pd,Nbin,'Normalization','pdf')
-    hold on, histogram(Pu,Nbin,'Normalization','pdf')
+    figure, histogram(Pd,Nbin,'Normalization','pdf','EdgeColor','red','FaceColor','red')
+    hold on, histogram(Pu,Nbin,'Normalization','pdf','EdgeColor','blue','FaceColor','blue')
 else
     N = length(data{1,2}(:,1))/4;
     P = data{1,2}(3*N+1:end,end);
