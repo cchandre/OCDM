@@ -266,7 +266,7 @@ class DiaMol:
 			if field and self.frame == 'rotating':
 				H += -self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.cos(phi)**2 + self.al_perp(r))
 			elif field and self.frame == 'fixed':
-				H += -Eeff * (self.Dal(r) * xp.cos(phi - self.Phi(t_))**2 + self.al_perp(r))
+				H += -Eeff * (self.Dal(r) * xp.cos(phi - self.Phi(t))**2 + self.al_perp(r))
 		elif self.dim == 3:
 			if len(y_) > 2 * self.dim:
 				r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
@@ -276,7 +276,7 @@ class DiaMol:
 			if field and self.frame == 'rotating':
 				H += -self.Omega(t) * p_phi - Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
 			elif field and self.frame == 'fixed':
-				H += -Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t_))**2 + self.al_perp(r))
+				H += -Eeff * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t))**2 + self.al_perp(r))
 		return H
 
 	def env(self, t):
