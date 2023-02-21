@@ -62,6 +62,18 @@ ___
 - *darkmode*: boolean; if True, plots are done in dark mode
 
 ---
+Reference: 
+- C. Chandre, J.P. Salas, *Nonlinear dynamics of molecular superrotors*, [arXiv](https://arxiv.org/abs/)
+```bibtex
+@misc{chandre2023,
+      title = {Nonlinear dynamics of molecular superrotors}, 
+      author = {C. Chandre and J. Pablo Salas},
+      year = {2023},
+      eprint = {},
+      archivePrefix = {arXiv},
+      primaryClass = {}
+}
+```
 For more information: <cristel.chandre@cnrs.fr>
 
 <p align="center">
