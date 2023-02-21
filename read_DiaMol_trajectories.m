@@ -1,6 +1,6 @@
 function read_DiaMol_trajectories
 %%
-%% Last modified by Cristel Chandre (January 13, 2023)
+%% Last modified by Cristel Chandre (February 21, 2023)
 %% Comments? cristel.chandre@cnrs.fr 
 %%
 choice_repr = 'pphi'; % options are 'pphi' or 'p' (rescaled)
@@ -26,9 +26,9 @@ if length(data)==3
     n_l = length(y_l(:,1,1));
     if strcmp(method,'time_series')
         if dim==2
-            labels = {'$r$','$\phi$','$p_r$','$p_\phi$'};
+            labels = {'$r$ (a.u.)','$\phi$','$p_r$ (a.u.)','$p_\phi$ (a.u.)'};
         else
-            labels = {'$r$','$\theta$','$\phi$','$p_r$','$p_\theta$','$p_\phi$'};
+            labels = {'$r$ (a.u.)','$\theta$','$\phi$','$p_r$ (a.u.)','$p_\theta$ (a.u.)','$p_\phi$ (a.u.)'};
         end
         for it = 1:length(variables)
             subplot(length(variables),1,it)
@@ -54,7 +54,7 @@ if length(data)==3
                 hold on
                 plot(y_l(:,2,it),y_l(:,4,it),'b.')
                 plot(y_c(:,2,it),y_c(:,4,it),'k.')
-                ylabel('$p_\phi$','interpreter','latex','FontSize',26)
+                ylabel('$p_\phi$ (a.u.)','interpreter','latex','FontSize',26)
             end
             hold off
             title(['$t =$ ' num2str(t(it))],'interpreter','latex')
@@ -74,9 +74,9 @@ else
     y = reshape(data{1,2},[n,2*dim,n_t]);
     if strcmp(method,'time_series')
         if dim==2
-            labels = {'$r$','$\phi$','$p_r$','$p_\phi$'};
+            labels = {'$r$ (a.u.)','$\phi$','$p_r$ (a.u.)','$p_\phi$ (a.u.)'};
         else
-            labels = {'$r$','$\theta$','$\phi$','$p_r$','$p_\theta$','$p_\phi$'};
+            labels = {'$r$ (a.u.)','$\theta$','$\phi$','$p_r$ (a.u.)','$p_\theta$ (a.u.)','$p_\phi$ (a.u.)'};
         end
         for it = 1:2*dim
             subplot(2*dim,1,it)
@@ -93,7 +93,7 @@ else
                 ylabel('$p$','interpreter','latex','FontSize',26)
             elseif strcmp(choice_repr,'pphi')
                 figure, plot(y(:,2,it),y(:,4,it),'b.')
-                ylabel('$p_\phi$','interpreter','latex','FontSize',26)
+                ylabel('$p_\phi$ (a.u.)','interpreter','latex','FontSize',26)
             end
             title(['$t =$ ' num2str(t(it))],'interpreter','latex')
             set(gca,'box','on','FontSize',20,'LineWidth',2)
