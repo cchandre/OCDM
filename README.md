@@ -63,14 +63,14 @@ ___
 
 ---
 Reference: 
-- C. Chandre, J. Pablo Salas, *Nonlinear dynamics of molecular superrotors*, [arXiv](https://arxiv.org/abs/)
+- C. Chandre, J. Pablo Salas, *Nonlinear dynamics of molecular superrotors*, [arXiv:2303.05090](https://arxiv.org/abs/2303.05090)
 ```bibtex
 @misc{chandre2023,
       title = {Nonlinear dynamics of molecular superrotors}, 
       author = {C. Chandre and J. Pablo Salas},
       year = {2023},
-      eprint = {},
-      archivePrefix = {arXiv},
+      eprint = {https://doi.org/10.48550/arXiv.2303.05090},
+      archivePrefix = {arXiv:2303.05090},
       primaryClass = {}
 }
 ```
