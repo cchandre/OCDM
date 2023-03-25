@@ -191,7 +191,7 @@ def run_method(case):
                     ax.set_ylabel(ylabel, multialignment='center')
                 plt.show()
     elif case.Method == 'poincaré':
-        filestr += '_' + 'F0{:.2e}'.format(case.F0).replace('.', '')
+        filestr += '_' + f'F0{case.F0:.2e}'.replace('.', '')
         t = sp.symbols('t')
         if sp.diff(case.Omega(t), t) != 0:
             print('\033[33m          Warning: The frequency Omega is not constant \033[00m')
@@ -265,6 +265,6 @@ def save_data(case, data, filestr, info=[]):
     if case.SaveData:
         mdic = case.DictParams.copy()
         mdic.update({'data': data, 'info': info})
-        mdic.update({'date': date.today().strftime(" %B %d, %Y\n"), 'author': 'cristel.chandre@cnrs.fr'})
+        mdic.update({'date': date.today().strftime(' %B %d, %Y\n'), 'author': 'cristel.chandre@cnrs.fr'})
         savemat(filestr + '.mat', mdic)
         print(f'\033[90m        Results saved in {filestr}.mat \033[00m')
