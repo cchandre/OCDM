@@ -51,15 +51,15 @@ def main():
 
 class DiaMol:
 	def __repr__(self):
-		return '{self.__class__.__name__}({self.DictParams})'.format(self=self)
+		return f'{self.__class__.__name__}({self.DictParams})'
 
 	def __str__(self):
-		return 'Optical Centrifuge for Diatomic Molecules ({}) with F0 = {:.3e}'.format(self.__class__.__name__, self.F0)
+		return f'Optical Centrifuge for Diatomic Molecules ({self.__class__.__name__}) with F0 = {self.F0:.3e}'
 
-	def __init__(self, dict):
-		for key in dict:
-			setattr(self, key, dict[key])
-		self.DictParams = dict
+	def __init__(self, dict_):
+		for key in dict_:
+			setattr(self, key, dict_[key])
+		self.DictParams = dict_
 		self.Omega = lambda t: Omega(t)
 		t = sp.symbols('t')
 		self.beta = float(sp.diff(self.Omega(t), t))
@@ -103,12 +103,13 @@ class DiaMol:
 		self.d_Dal = lambda r: d_al_para(r) - self.d_al_perp(r)
 		self.ZVS = lambda r, theta, phi, t: -self.mu * self.Omega(t)**2 * r**2 * xp.sin(theta)**2 / 2 + self.eps(r) - self.F0**2 * self.env(t)**2 / 4 * (self.Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.al_perp(r))
 		if self.ode_solver == 'Verlet':
-			self.alpha_o = [1, 0]
-			self.alpha_s = [0.5, 0.5]
+			alpha_s = [0.5]
 		elif self.ode_solver == 'BM4':
 			alpha_s = [0.0792036964311957, 0.1303114101821663, 0.2228614958676077, -0.3667132690474257, 0.3246481886897062, 0.1096884778767498]
-			self.alpha_o = xp.tile([1, 0], 6)
-			self.alpha_s = xp.concatenate((alpha_s, alpha_s[::-1]))
+		elif self.ode_solver == 'BM6':
+			alpha_s = [0.050262764400392, 0.098553683500650, 0.314960616927694, -0.447346482695478, 0.492426372489876, -0.425118767797691, 0.237063913978122, 0.195602488600053, 0.346358189850727, -0.362762779254345]
+		self.alpha_o = xp.tile([1, 0], len(alpha_s))
+		self.alpha_s = xp.concatenate((alpha_s, alpha_s[::-1]))
 
 	def eqn_H(self, t, y_):
 		Eeff = self.F0**2 * self.env(t)**2 / 4
@@ -417,5 +418,5 @@ class DiaMol:
 				vec = xp.hstack((vec, vec_t[func(vec_t)<=E0]))
 			return vec[:N]
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	main()
