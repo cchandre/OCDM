@@ -34,7 +34,7 @@ import time
 from datetime import date
 import os
 import warnings
-warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings('ignore', category=RuntimeWarning)
 
 def run_method(case):
     if case.darkmode:
@@ -64,7 +64,7 @@ def run_method(case):
         axs[0].set_ylim((-0.1, 0.2))
         if case.SaveData:
             fig.savefig(filestr + '.png', dpi=case.dpi)
-            print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
+            print(f'\033[90m        Figure saved in {filestr}.png \033[00m')
         plt.show()
     elif case.Method == 'plot_ZVS' and case.PlotResults:
         filestr += '_' + 'F0{:.2e}'.format(case.F0).replace('.', '')
@@ -81,7 +81,7 @@ def run_method(case):
         ax.set_title(r'Zero-Velocity Surface')
         if case.SaveData:
             fig.savefig(filestr + '.png', dpi=case.dpi)
-            print('\033[90m        Figure saved in {}.png \033[00m'.format(filestr))
+            print(f'\033[90m        Figure saved in {filestr}.png \033[00m')
         plt.show()
     elif case.Method in ['dissociation', 'trajectories']:
         y0 = case.initcond(case.Ntraj)
@@ -110,7 +110,7 @@ def run_method(case):
                     if eval[_ + 1]:
                         yf = xp.vstack((yf, y))
                 yf = yf.transpose()
-            print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
+            print(f'\033[90m        Computation finished in {int(time.time() - start)} seconds \033[00m')
             dissociated, typeL = case.check_type(yf[:, -1])
             if case.type_traj[1] == 'cartesian':
                 yc = case.sph2cart(yf)
@@ -134,14 +134,14 @@ def run_method(case):
             if case.Method == 'dissociation':
                 diss_proba = dissociated.sum() / case.Ntraj
                 typeL_proba = typeL.sum() / case.Ntraj
-                print('\033[96m          for F0 = {:.3e}, dissociation probability = {:.3e}, type-L probability = {:.3e} \033[00m'.format(case.F0, diss_proba, typeL_proba))
+                print(f'\033[96m          for F0 = {case.F0:.3e}, dissociation probability = {diss_proba:.3e}, type-L probability = {typeL_proba:.3e} \033[00m')
                 vec_data = [case.F0, diss_proba, typeL_proba]
                 file = open(type(case).__name__ + '_' + case.Method + '.txt', 'a')
                 if os.path.getsize(file.name) == 0:
-                    file.writelines('%   initial = {}       beta = {:.3e}    dim = {}    N = {}\n'.format(case.initial_conditions, case.beta, case.dim, case.Ntraj))
-                    file.writelines('%   env = {}     {} \n'.format(case.envelope, case.te))
-                    file.writelines('%   F0           diss_proba     typeL_proba \n')
-                file.writelines(' '.join(['{:.6e}'.format(data) for data in vec_data]) + '\n')
+                    file.writelines(f'%   initial = {case.initial_conditions}       beta = {case.beta:.3e}    dim = {case.dim}    N = {case.Ntraj}\n')
+                    file.writelines(f'%   env = {case.envelope}     {case.te} \n')
+                    file.writelines(f'%   F0           diss_proba     typeL_proba \n')
+                file.writelines(' '.join([f'{data:.6e}' for data in vec_data]) + '\n')
                 file.close()
             elif case.Method == 'trajectories' and case.PlotResults:
                 fig = plt.figure(figsize=(12, 9.5))
@@ -240,7 +240,7 @@ def run_method(case):
                 y_events = xp.vstack((y_events, sol.y_events[0]))
             else:
                 y_events = sol.y_events[0]
-        print('\033[90m        Computation finished in {} seconds \033[00m'.format(int(time.time() - start)))
+        print(f'\033[90m        Computation finished in {int(time.time() - start)} seconds \033[00m')
         save_data(case, y_events, filestr)
         if case.PlotResults:
             fig, ax = plt.subplots(1, 1)
@@ -267,4 +267,4 @@ def save_data(case, data, filestr, info=[]):
         mdic.update({'data': data, 'info': info})
         mdic.update({'date': date.today().strftime(" %B %d, %Y\n"), 'author': 'cristel.chandre@cnrs.fr'})
         savemat(filestr + '.mat', mdic)
-        print('\033[90m        Results saved in {}.mat \033[00m'.format(filestr))
+        print(f'\033[90m        Results saved in {filestr}.mat \033[00m')
