@@ -108,8 +108,9 @@ class DiaMol:
 			alpha_s = [0.0792036964311957, 0.1303114101821663, 0.2228614958676077, -0.3667132690474257, 0.3246481886897062, 0.1096884778767498]
 		elif self.ode_solver == 'BM6':
 			alpha_s = [0.050262764400392, 0.098553683500650, 0.314960616927694, -0.447346482695478, 0.492426372489876, -0.425118767797691, 0.237063913978122, 0.195602488600053, 0.346358189850727, -0.362762779254345]
-		self.alpha_o = xp.tile([1, 0], len(alpha_s))
-		self.alpha_s = xp.concatenate((alpha_s, alpha_s[::-1]))
+		if self.ode_solver in ['Verlet', 'BM4', 'BM6']:
+			self.alpha_o = xp.tile([1, 0], len(alpha_s))
+			self.alpha_s = xp.concatenate((alpha_s, alpha_s[::-1]))
 
 	def eqn_H(self, t, y_):
 		Eeff = self.F0**2 * self.env(t)**2 / 4

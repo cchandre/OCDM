@@ -115,7 +115,8 @@ def run_method(case):
             if case.type_traj[1] == 'cartesian':
                 yc = case.sph2cart(yf)
             elif case.type_traj[1] == 'spherical':
-                yc = case.mod(yf)
+                #yc = case.mod(yf)
+                yc = yf.copy()
             if case.type_traj[2] == 'fixed' and case.frame == 'rotating':
                 yc = case.rotating(yc, -case.Phi(t_eval), type=case.type_traj[1])
             elif case.type_traj[2] == 'rotating' and case.frame == 'fixed':
@@ -197,12 +198,12 @@ def run_method(case):
             print('\033[33m          Warning: The frequency Omega is not constant \033[00m')
         Omega = case.Omega(0)
         def event_ps(t, y_):
-            if case.event == 'phi':
+            if case.EventPS == 'phi':
                 return (y_[1] + xp.pi) % (2 * xp.pi) - xp.pi
-            elif case.event == 'pr':
+            elif case.EventPS == 'pr':
                 return y_[2]
         event_ps.direction = -1
-        if case.event == 'phi':
+        if case.EventPS == 'phi':
             r = xp.linspace(case.r[0], case.r[1], 2**10)
             if case.EnergyPS < case.ZVS(r, xp.pi/2, 0, 0).min():
                 raise ValueError('Empty Poincaré section')
@@ -213,7 +214,7 @@ def run_method(case):
                 p_r = pr_max(r) * (2 * rand[1] - 1)
                 p_phi = case.mu * r**2 * Omega + event_ps.direction * r * xp.sqrt(pr_max(r)**2 - p_r**2)
                 y0_ = xp.vstack((r, xp.zeros(case.Ntraj), p_r, p_phi))
-        elif case.event == 'pr':
+        elif case.EventPS == 'pr':
             r = xp.linspace(case.r[0], case.r[1], 2**10)
             phi = xp.linspace(0, 2 * xp.pi, 2**10)
             rp = xp.meshgrid(r, phi)
@@ -244,7 +245,7 @@ def run_method(case):
         save_data(case, y_events, filestr)
         if case.PlotResults:
             fig, ax = plt.subplots(1, 1)
-            if case.event == 'phi':
+            if case.EventPS == 'phi':
                 r = xp.linspace(case.r[0], case.r[1], case.dpi)
                 ax.plot(r, pr_max(r), 'r')
                 ax.plot(r, -pr_max(r), 'r')
@@ -252,7 +253,7 @@ def run_method(case):
                 ax.set_xlim(case.r)
                 ax.set_xlabel(r'$r$')
                 ax.set_ylabel(r'$p_r$')
-            elif case.event == 'pr':
+            elif case.EventPS == 'pr':
                 ax.plot((y_events[1:, 1] + xp.pi) %(2 * xp.pi) - xp.pi, y_events[1:, 3], cs[1] + '.')
                 ax.set_xlim([-xp.pi, xp.pi])
                 ax.set_xticks([-xp.pi, -xp.pi / 2, 0, xp.pi / 2, xp.pi])
