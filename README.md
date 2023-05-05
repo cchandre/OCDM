@@ -43,6 +43,7 @@ ___
    - ['microcanonical_J', *n*, *J*] for a microcanonical distribution with initial energy *E*<sub>0</sub> = &omega;<sub>e</sub> (*n*+1/2) + *B*<sub>e</sub> *J*(*J*+1)-*D*<sub>e</sub>
    - array of shape (*Ntraj*, 2*dimension*) containing the initial conditions to be integrated
 - *spread3D*: float; between 0 and 1; spread in angle theta for the initial conditions (only in the 3D case)
+- *TimePS*: float; time at which the Poincaré section is computed (adiabatic approximation)
 - *EnergyPS*: float; initial value of the energy (atomic units) used in *Method*='poincaré'
 - *EventPS*: string; 'phi' or 'pr'; choice of Poincaré section; Poincaré section is *&phi;*=0 (mod 2 &pi;) with *&phi;'*<0 in the plane (*r*,*p*<sub>*r*</sub>) if *EventPS*='phi', and *p<sub>*r*</sub> =0 with *p<sub>*r*</sub>'<0 in the plane (*&phi;*,*p*<sub>*&phi;*</sub>) if *EventPS*='phi'
 - *ode_solver*: string; 'RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA', 'Verlet', 'BM4'; method for the integration of trajectories
@@ -52,13 +53,14 @@ ___
     - NB: For Poincaré sections, ode_solver = 'RK45' by default
 - *ode_tol*: array of two floats; absolute and relative tolerances [atol, rtol] for variable time-step integrators; see [ivp_solve](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) for more details
 - *ode_step*: float; time step (in picoseconds) for the symplectic integrators 'Verlet' and 'BM4'
+- *r_thresh*: float; threshold for the integration of trajectories; the integration is stopped whenever the distance *r* is larger than *r_thresh*
 - *frame*: string; 'fixed' or 'rotating'; specifies in which frame the numerical integration is performed
 - *type_traj*: array of 3 strings; ['all' or 'dissociated' or 'bounded', 'cartesian' or 'spherical', 'fixed' or 'rotating'] for the type of trajectories to be plotted and/or saved
 - *dpi*: integer; dpi value for the figures 
 ####
 - *SaveData*: boolean; if True, the results are saved in a `.mat` file (with the type specified in 'type_traj'); if Method='dissociation', the trajectories are saved at *t*=0, *t*=*t*<sub>u</sub>, *t*=*t*<sub>u</sub>+*t*<sub>p</sub> and *t*=*t*<sub>u</sub>+*t*<sub>p</sub>+*t*<sub>d</sub>; if Method='trajectories', the trajectories are saved with 'dpi' equispaced times from *t*=0 to *t*=*t*<sub>u</sub>+*t*<sub>p</sub>+*t*<sub>d</sub>; NB: the dissociation probabilities are saved in a `.txt` file regardless of the value of SaveData
 - *PlotResults*: boolean; if True, the results (for 'plot_potentials', 'plot_ZVS' and 'trajectories') are plotted right after the computation (with the type specified in 'type_traj' for 'trajectories')
-- *Parallelization*: tuple (boolean, int); True for parallelization, int is the number of cores to be used or int='all' to use all available cores
+- *Parallelization*: int or string; int is the number of cores to be used, 'all' for all of the cores
 - *darkmode*: boolean; if True, plots are done in dark mode
 
 ---
