@@ -43,8 +43,8 @@ ___
    - ['microcanonical_J', *n*, *J*] for a microcanonical distribution with initial energy *E*<sub>0</sub> = &omega;<sub>e</sub> (*n*+1/2) + *B*<sub>e</sub> *J*(*J*+1)-*D*<sub>e</sub>
    - array of shape (*Ntraj*, 2*dimension*) containing the initial conditions to be integrated
 - *spread3D*: float; between 0 and 1; spread in angle theta for the initial conditions (only in the 3D case)
-- *TimePS*: float; time at which the Poincaré section is computed (adiabatic approximation)
-- *EnergyPS*: float; initial value of the energy (atomic units) used in *Method*='poincaré'
+- *TimePS*: float; time (in picoseconds) at which the Poincaré section is computed (adiabatic approximation)
+- *EnergyPS*: float; initial value of the energy (in atomic units) used in *Method*='poincaré'
 - *EventPS*: string; 'phi' or 'pr'; choice of Poincaré section; Poincaré section is *&phi;*=0 (mod 2 &pi;) with *&phi;'*<0 in the plane (*r*,*p*<sub>*r*</sub>) if *EventPS*='phi', and *p<sub>*r*</sub> =0 with *p<sub>*r*</sub>'<0 in the plane (*&phi;*,*p*<sub>*&phi;*</sub>) if *EventPS*='phi'
 - *ode_solver*: string; 'RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA', 'Verlet', 'BM4'; method for the integration of trajectories
     - 'RK45', 'RK23', 'DOP853', 'Radau', 'BDF', 'LSODA': (non-symplectic, variable time step); see [ivp_solve](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) for more details
