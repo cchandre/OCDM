@@ -4,32 +4,35 @@
 
 import numpy as xp
 
-Method = 'dissociation'
+Method = 'poincaré'
 
 dimension = 2
 
-F0 = xp.linspace(0.007, 0.03, 500)
+#F0 = xp.linspace(0.007, 0.03, 500)
+F0 = 0.0121042
 Omega = lambda t: 3e-10 * t
 envelope = 'sinus'
-te = [5, 40, 5]
+te = [5, 300, 5]
 
-Ntraj = 100000
-r = [2, 10]
+Ntraj = 100
+r = [3, 5]
 initial_conditions = ['microcanonical_J', 0, 30]
 spread3D = 0.1
-EnergyPS = []
+TimePS = 47
+EnergyPS = -0.177643
 EventPS = 'phi'
 ode_solver = 'BM4'
-ode_tol = [1e-7, 1e-7]
+ode_tol = [1e-8, 1e-8]
 ode_step = 1e-2
+r_thresh = 20
 frame = 'rotating'
 
 type_traj = ['all', 'spherical', 'rotating']
 dpi = 1024
 
 SaveData = False
-PlotResults = False
-Parallelization = (True, 50)
+PlotResults = True
+Parallelization = 4
 
 darkmode = True
 
@@ -39,6 +42,8 @@ darkmode = True
 if Method == 'poincaré':
     dimension = 2
     envelope = 'const'
+    OmegaPS = Omega(TimePS / 2.418884254e-5)
+    Omega = lambda t: OmegaPS
     te = [0, sum(te), 0]
     type_traj = ['all', 'spherical', 'rotating']
     ode_solver = 'RK45'
@@ -56,6 +61,7 @@ for dict, F in zip(dict_list, xp.atleast_1d(F0)):
         'r': r,
         'initial_conditions': initial_conditions,
         'spread3D': min(max(spread3D, 0), 1),
+        'r_thresh': r_thresh,
         'EnergyPS': EnergyPS,
         'EventPS': EventPS,
         'type_traj': type_traj,

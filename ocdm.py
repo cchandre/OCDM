@@ -29,7 +29,7 @@ import numpy as xp
 import sympy as sp
 from scipy.optimize import root_scalar, fmin
 from ocdm_modules import run_method
-from ocdm_dict import dict_list, Parallelization, Omega
+from ocdm_dict import dict_list, Parallelization, Omega, Method
 import multiprocessing
 
 def run_case(dict):
@@ -38,16 +38,12 @@ def run_case(dict):
 
 def main():
 	print('\033[92m  Optical Centrifuge for Diatomic Molecules (here: Cl2)  \033[00m')
-	if Parallelization[0]:
-		if Parallelization[1] == 'all':
-			num_cores = multiprocessing.cpu_count()
-		else:
-			num_cores = min(multiprocessing.cpu_count(), Parallelization[1])
+	if len(dict_list) == 1:
+		run_case(dict_list[0])
+	else:
+		num_cores = None if Parallelization == 'all' else min(multiprocessing.cpu_count(), Parallelization)
 		pool = multiprocessing.Pool(num_cores)
 		pool.map(run_case, dict_list)
-	else:
-		for dict in dict_list:
-			run_case(dict)
 
 class DiaMol:
 	def __repr__(self):
@@ -114,138 +110,139 @@ class DiaMol:
 
 	def eqn_H(self, t, y_):
 		Eeff = self.F0**2 * self.env(t)**2 / 4
-		if self.dim == 2 and self.frame == 'rotating':
+		if self.dim == 2:
 			r, phi, p_r, p_phi = xp.split(y_, 4)
-			dr = p_r / self.mu
-			dphi = p_phi / (self.mu * r**2) - self.Omega(t)
-			dp_r = p_phi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
-			dp_phi = -Eeff * self.Dal(r) * xp.sin(2 * phi)
+			dr, dphi, dp_r, dp_phi = xp.split(xp.zeros_like(y_), 4)
+			ind = xp.where(r <= self.r_thresh)
+			r, phi, p_r, p_phi = r[ind], phi[ind], p_r[ind], p_phi[ind]
+			dr[ind] = p_r / self.mu
+			if self.frame == 'rotating':
+				dphi[ind] = p_phi / (self.mu * r**2) - self.Omega(t)
+				dp_r[ind] = p_phi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r))
+				dp_phi[ind] = -Eeff * self.Dal(r) * xp.sin(2 * phi)
+			elif self.frame == 'fixed':
+				dphi[ind] = p_phi / (self.mu * r**2)
+				dp_r[ind] = p_phi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi - self.Phi(t))**2 + self.d_al_perp(r))
+				dp_phi[ind] = -Eeff * self.Dal(r) * xp.sin(2 * (phi - self.Phi(t)))
 			return xp.concatenate((dr, dphi, dp_r, dp_phi), axis=None)
-		elif self.dim == 3 and self.frame == 'rotating':
+		elif self.dim == 3:
 			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
-			dr = p_r / self.mu
-			dtheta = p_theta / (self.mu * r**2)
-			dphi = p_phi / (self.mu * r**2 * xp.sin(theta)**2) - self.Omega(t)
-			dp_r = p_theta**2 / (self.mu * r**3) + p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r))
-			dp_theta = p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2
-			dp_phi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
-			return xp.concatenate((dr, dtheta, dphi, dp_r, dp_theta, dp_phi), axis=None)
-		elif self.dim == 2 and self.frame == 'fixed':
-			r, phi, p_r, p_phi = xp.split(y_, 4)
-			dr = p_r / self.mu
-			dphi = p_phi / (self.mu * r**2)
-			dp_r = p_phi**2 / (self.mu * r**3) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.cos(phi - self.Phi(t))**2 + self.d_al_perp(r))
-			dp_phi = -Eeff * self.Dal(r) * xp.sin(2 * (phi - self.Phi(t)))
-			return xp.concatenate((dr, dphi, dp_r, dp_phi), axis=None)
-		elif self.dim == 3 and self.frame == 'fixed':
-			r, theta, phi, p_r, p_theta, p_phi = xp.split(y_, 6)
-			dr = p_r / self.mu
-			dtheta = p_theta / (self.mu * r**2)
-			dphi = p_phi / (self.mu * r**2 * xp.sin(theta)**2)
-			dp_r = p_theta**2 / (self.mu * r**3) + p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t))**2 + self.d_al_perp(r))
-			dp_theta = p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi - self.Phi(t))**2
-			dp_phi = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * (phi - self.Phi(t)))
+			dr, dtheta, dphi, dp_r, dp_theta, dp_phi = xp.split(xp.zeros_like(y_), 6)
+			ind = xp.where(r <= self.r_thresh)
+			r, theta, phi, p_r, p_theta, p_phi = r[ind], theta[ind], phi[ind], p_r[ind], p_theta[ind], p_phi[ind]
+			dr[ind] = p_r / self.mu
+			if self.frame == 'rotating':
+				dtheta[ind] = p_theta / (self.mu * r**2)
+				dphi[ind] = p_phi / (self.mu * r**2 * xp.sin(theta)**2) - self.Omega(t)
+				dp_r[ind] = p_theta**2 / (self.mu * r**3) + p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r))
+				dp_theta[ind] = p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2
+				dp_phi[ind] = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi)
+			elif self.frame == 'fixed':
+				dtheta[ind] = p_theta / (self.mu * r**2)
+				dphi[ind] = p_phi / (self.mu * r**2 * xp.sin(theta)**2)
+				dp_r[ind] = p_theta**2 / (self.mu * r**3) + p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) - self.d_eps(r) + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t))**2 + self.d_al_perp(r))
+				dp_theta[ind] = p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) + Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi - self.Phi(t))**2
+				dp_phi[ind] = -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * (phi - self.Phi(t)))
 			return xp.concatenate((dr, dtheta, dphi, dp_r, dp_theta, dp_phi), axis=None)
 
 	def chi(self, h, t, y):
-		if self.dim == 2 and self.frame == 'rotating':
-			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
-			r += p_r / self.mu * h
-			t_ += h
-			p_r += p_phi**2 / (self.mu * r**3) * h
-			phi += p_phi / (self.mu * r**2) * h - self.Omega(t_) * h
-			Eeff = self.F0**2 * self.env(t_)**2 / 4
-			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
-			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
+		t_ = t + h
+		Eeff = self.F0**2 * self.env(t_)**2 / 4
+		if self.dim == 2:
+			r, phi, p_r, p_phi = xp.split(y, 4)
+			ind = xp.where(r <= self.r_thresh)
+			r[ind] += p_r[ind] / self.mu * h
+			r_, p_phi_ = r[ind], p_phi[ind]
+			if self.frame == 'rotating':
+				p_r[ind] += p_phi_**2 / (self.mu * r_**3) * h
+				phi[ind] += p_phi_ / (self.mu * r_**2) * h - self.Omega(t_) * h
+				phi_ = phi[ind]
+				p_r[ind] += -self.d_eps(r_) * h + Eeff * (self.d_Dal(r_) * xp.cos(phi_)**2 + self.d_al_perp(r_)) * h
+				p_phi[ind] += -Eeff * self.Dal(r_) * xp.sin(2 * phi_) * h
+			elif self.frame == 'fixed':
+				phi[ind] += p_phi_ / (self.mu * r_**2) * h
+				phi_ = phi[ind]
+				p_r[ind] += p_phi_**2 / (self.mu * r_**3) * h
+				p_r[ind] += -self.d_eps(r_) * h + Eeff * (self.d_Dal(r_) * xp.cos(phi_ - self.Phi(t_))**2 + self.d_al_perp(r_)) * h
+				p_phi[ind] += -Eeff * self.Dal(r_) * xp.sin(2 * (phi_ - self.Phi(t_))) * h
 			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
-		elif self.dim == 3 and self.frame == 'rotating':
-			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
-			r += p_r / self.mu * h
-			t_ += h
-			theta += p_theta / (self.mu * r**2) * h
-			p_r += p_theta**2 / (self.mu * r**3) * h
-			phi += p_phi / (self.mu * r**2 * xp.sin(theta)**2) * h - self.Omega(t_) * h
-			p_r += p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) * h
-			p_theta += p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) * h
-			Eeff = self.F0**2 * self.env(t_)**2 / 4
-			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r)) * h
-			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2 * h
-			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi) * h
-			return t_, xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
-		elif self.dim == 2 and self.frame == 'fixed':
-			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
-			r += p_r / self.mu * h
-			t_ += h
-			phi += p_phi / (self.mu * r**2) * h
-			p_r += p_phi**2 / (self.mu * r**3) * h
-			Eeff = self.F0**2 * self.env(t_)**2 / 4
-			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
-			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * (phi - self.Phi(t_))) * h
-			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
-		elif self.dim == 3 and self.frame == 'fixed':
-			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
-			r += p_r / self.mu * h
-			t_ += h
-			theta += p_theta / (self.mu * r**2) * h
-			p_r += p_theta**2 / (self.mu * r**3) * h
-			phi += p_phi / (self.mu * r**2 * xp.sin(theta)**2) * h
-			p_r += p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) * h
-			p_theta += p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) * h
-			Eeff = self.F0**2 * self.env(t_)**2 / 4
-			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
-			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi - self.Phi(t_))**2 * h
-			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * (phi - self.Phi(t_))) * h
+		elif self.dim == 3:
+			r, theta, phi, p_r, p_theta, p_phi = xp.split(y, 6)
+			ind = xp.where(r <= self.r_thresh)
+			r[ind] += p_r[ind] / self.mu * h
+			r_, p_theta_, p_phi_ = r[ind], p_theta[ind], p_phi[ind]
+			if self.frame == 'rotating':
+				theta[ind] += p_theta_ / (self.mu * r_**2) * h
+				theta_ = theta[ind]
+				p_r[ind] += p_theta_**2 / (self.mu * r_**3) * h
+				phi[ind] += p_phi_ / (self.mu * r_**2 * xp.sin(theta_)**2) * h - self.Omega(t_) * h
+				phi_ = phi[ind]
+				p_r[ind] += p_phi_**2 / (self.mu * r_**3 * xp.sin(theta_)**2) * h
+				p_theta[ind] += p_phi_**2 * xp.cos(theta_) / (self.mu * r_**2 * xp.sin(theta_)**3) * h
+				p_r[ind] += -self.d_eps(r_) * h + Eeff * (self.d_Dal(r_) * xp.sin(theta_)**2 * xp.cos(phi_)**2 + self.d_al_perp(r_)) * h
+				p_theta[ind] += Eeff * self.Dal(r_) * xp.sin(2 * theta_) * xp.cos(phi_)**2 * h
+				p_phi[ind] += -Eeff * self.Dal(r_) * xp.sin(theta_)**2 * xp.sin(2 * phi_) * h
+			elif self.frame == 'fixed':
+				theta[ind] += p_theta_ / (self.mu * r_**2) * h
+				theta_ = theta[ind]
+				p_r[ind] += p_theta_**2 / (self.mu * r_**3) * h
+				phi[ind] += p_phi_ / (self.mu * r_**2 * xp.sin(theta_)**2) * h
+				phi_ = phi[ind]
+				p_r[ind] += p_phi_**2 / (self.mu * r_**3 * xp.sin(theta_)**2) * h
+				p_theta[ind] += p_phi_**2 * xp.cos(theta_) / (self.mu * r_**2 * xp.sin(theta_)**3) * h
+				p_r[ind] += -self.d_eps(r_) * h + Eeff * (self.d_Dal(r_) * xp.sin(theta_)**2 * xp.cos(phi_ - self.Phi(t_))**2 + self.d_al_perp(r_)) * h
+				p_theta[ind] += Eeff * self.Dal(r_) * xp.sin(2 * theta_) * xp.cos(phi_ - self.Phi(t_))**2 * h
+				p_phi[ind] += -Eeff * self.Dal(r_) * xp.sin(theta_)**2 * xp.sin(2 * (phi_ - self.Phi(t_))) * h
 			return t_, xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
 
 	def chi_star(self, h, t, y):
-		if self.dim == 2 and self.frame == 'rotating':
-			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
-			Eeff = self.F0**2 * self.env(t_)**2 / 4
-			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi)**2 + self.d_al_perp(r)) * h
-			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * phi) * h
-			phi += p_phi / (self.mu * r**2) * h - self.Omega(t_) * h
-			p_r += p_phi**2 / (self.mu * r**3) * h
-			r += p_r / self.mu * h
-			t_ += h
-			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
-		elif self.dim == 3 and self.frame == 'rotating':
-			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
-			Eeff = self.F0**2 * self.env(t_)**2 / 4
-			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi)**2 + self.d_al_perp(r)) * h
-			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi)**2 * h
-			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * phi) * h
-			phi += p_phi / (self.mu * r**2 * xp.sin(theta)**2) * h - self.Omega(t_) * h
-			p_r += p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) * h
-			p_theta += p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) * h
-			theta += p_theta / (self.mu * r**2) * h
-			p_r += p_theta**2 / (self.mu * r**3) * h
-			r += p_r / self.mu * h
-			t_ += h
-			return t_, xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
-		elif self.dim == 2 and self.frame == 'fixed':
-			t_, (r, phi, p_r, p_phi) = t, xp.split(y, 4)
-			Eeff = self.F0**2 * self.env(t_)**2 / 4
-			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
-			p_phi += -Eeff * self.Dal(r) * xp.sin(2 * (phi - self.Phi(t_))) * h
-			phi += p_phi / (self.mu * r**2) * h
-			p_r += p_phi**2 / (self.mu * r**3) * h
-			r += p_r / self.mu * h
-			t_ += h
-			return t_, xp.concatenate((r, phi, p_r, p_phi), axis=None)
-		elif self.dim == 3 and self.frame == 'fixed':
-			t_, (r, theta, phi, p_r, p_theta, p_phi) = t, xp.split(y, 6)
-			Eeff = self.F0**2 * self.env(t_)**2 / 4
-			p_r += -self.d_eps(r) * h + Eeff * (self.d_Dal(r) * xp.sin(theta)**2 * xp.cos(phi - self.Phi(t_))**2 + self.d_al_perp(r)) * h
-			p_theta += Eeff * self.Dal(r) * xp.sin(2 * theta) * xp.cos(phi - self.Phi(t_))**2 * h
-			p_phi += -Eeff * self.Dal(r) * xp.sin(theta)**2 * xp.sin(2 * (phi - self.Phi(t_))) * h
-			phi += p_phi / (self.mu * r**2 * xp.sin(theta)**2) * h
-			p_r += p_phi**2 / (self.mu * r**3 * xp.sin(theta)**2) * h
-			p_theta += p_phi**2 * xp.cos(theta) / (self.mu * r**2 * xp.sin(theta)**3) * h
-			theta += p_theta / (self.mu * r**2) * h
-			p_r += p_theta**2 / (self.mu * r**3) * h
-			r += p_r / self.mu * h
-			t_ += h
-			return t_, xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
+		Eeff = self.F0**2 * self.env(t)**2 / 4
+		if self.dim == 2:
+			r, phi, p_r, p_phi = xp.split(y, 4)
+			ind = xp.where(r <= self.r_thresh)
+			r_, phi_ = r[ind], phi[ind]
+			if self.frame == 'rotating':
+				p_r[ind] += -self.d_eps(r_) * h + Eeff * (self.d_Dal(r_) * xp.cos(phi_)**2 + self.d_al_perp(r_)) * h
+				p_phi[ind] += -Eeff * self.Dal(r_) * xp.sin(2 * phi_) * h
+				p_phi_ = p_phi[ind]
+				phi[ind] += p_phi_ / (self.mu * r_**2) * h - self.Omega(t) * h
+				p_r[ind] += p_phi_**2 / (self.mu * r_**3) * h
+			elif self.frame == 'fixed':
+				p_r[ind] += -self.d_eps(r_) * h + Eeff * (self.d_Dal(r_) * xp.cos(phi_ - self.Phi(t))**2 + self.d_al_perp(r_)) * h
+				p_phi[ind] += -Eeff * self.Dal(r_) * xp.sin(2 * (phi_ - self.Phi(t))) * h
+				p_phi_ = p_phi[ind]
+				phi[ind] += p_phi_ / (self.mu * r_**2) * h
+				p_r[ind] += p_phi_**2 / (self.mu * r_**3) * h
+			r[ind] += p_r[ind] / self.mu * h
+			return t + h, xp.concatenate((r, phi, p_r, p_phi), axis=None)
+		elif self.dim == 3:
+			r, theta, phi, p_r, p_theta, p_phi = xp.split(y, 6)
+			ind = xp.where(r <= self.r_thresh)
+			r_, theta_, phi_ = r[ind], theta[ind], phi[ind]
+			if self.frame == 'rotating':
+				p_r[ind] += -self.d_eps(r_) * h + Eeff * (self.d_Dal(r_) * xp.sin(theta_)**2 * xp.cos(phi_)**2 + self.d_al_perp(r_)) * h
+				p_theta[ind] += Eeff * self.Dal(r_) * xp.sin(2 * theta_) * xp.cos(phi_)**2 * h
+				p_phi[ind] += -Eeff * self.Dal(r_) * xp.sin(theta_)**2 * xp.sin(2 * phi_) * h
+				p_phi_ = p_phi[ind]
+				phi[ind] += p_phi_ / (self.mu * r_**2 * xp.sin(theta_)**2) * h - self.Omega(t) * h
+				p_r[ind] += p_phi_**2 / (self.mu * r_**3 * xp.sin(theta_)**2) * h
+				p_theta[ind] += p_phi_**2 * xp.cos(theta_) / (self.mu * r_**2 * xp.sin(theta_)**3) * h
+				p_theta_ = p_theta[ind]
+				theta[ind] += p_theta_ / (self.mu * r_**2) * h
+				p_r[ind] += p_theta_**2 / (self.mu * r_**3) * h
+			elif self.frame == 'fixed':
+				p_r[ind] += -self.d_eps(r_) * h + Eeff * (self.d_Dal(r_) * xp.sin(theta_)**2 * xp.cos(phi_ - self.Phi(t))**2 + self.d_al_perp(r_)) * h
+				p_theta[ind] += Eeff * self.Dal(r_) * xp.sin(2 * theta_) * xp.cos(phi_ - self.Phi(t))**2 * h
+				p_phi[ind] += -Eeff * self.Dal(r_) * xp.sin(theta_)**2 * xp.sin(2 * (phi_ - self.Phi(t))) * h
+				p_phi_ = p_phi[ind]
+				phi[ind] += p_phi_ / (self.mu * r_**2 * xp.sin(theta_)**2) * h
+				p_r[ind] += p_phi_**2 / (self.mu * r_**3 * xp.sin(theta_)**2) * h
+				p_theta[ind] += p_phi_**2 * xp.cos(theta_) / (self.mu * r_**2 * xp.sin(theta_)**3) * h
+				p_theta_ = p_theta[ind]
+				theta[ind] += p_theta_ / (self.mu * r_**2) * h
+				p_r[ind] += p_theta_**2 / (self.mu * r_**3) * h
+			r[ind] += p_r[ind] / self.mu * h
+			return t + h, xp.concatenate((r, theta, phi, p_r, p_theta, p_phi), axis=None)
 
 	def eqn_sympl(self, h, t, y):
 		t_, y_ = t, y.copy()

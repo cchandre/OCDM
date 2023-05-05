@@ -34,7 +34,10 @@ import time
 from datetime import date
 import os
 import warnings
-warnings.filterwarnings('ignore', category=RuntimeWarning)
+from tqdm import tqdm
+import multiprocess
+from ocdm_dict import Parallelization
+warnings.filterwarnings('ignore')
 
 def run_method(case):
     if case.darkmode:
@@ -204,16 +207,11 @@ def run_method(case):
                 return y_[2]
         event_ps.direction = -1
         if case.EventPS == 'phi':
-            r = xp.linspace(case.r[0], case.r[1], 2**10)
-            if case.EnergyPS < case.ZVS(r, xp.pi/2, 0, 0).min():
-                raise ValueError('Empty Poincaré section')
-            else:
-                pr_max = lambda r: xp.sqrt(2 * case.mu * (case.EnergyPS - case.ZVS(r, 0, xp.pi/2, 0)))
-                rand = xp.random.random((2, case.Ntraj))
-                r = (case.r[1] - case.r[0]) * rand[0] + case.r[0]
-                p_r = pr_max(r) * (2 * rand[1] - 1)
-                p_phi = case.mu * r**2 * Omega + event_ps.direction * r * xp.sqrt(pr_max(r)**2 - p_r**2)
-                y0_ = xp.vstack((r, xp.zeros(case.Ntraj), p_r, p_phi))
+            r = case.generate_r(lambda r: case.ZVS(r, xp.pi/2, 0, 0), case.EnergyPS, case.Ntraj, case.r)
+            pr_max = lambda _: xp.sqrt(2 * case.mu * (case.EnergyPS - case.ZVS(_, xp.pi/2, 0, 0)))
+            p_r = pr_max(r) * (2 * xp.random.random(r.shape) - 1)
+            p_phi = case.mu * r**2 * Omega + event_ps.direction * r * xp.sqrt(pr_max(r)**2 - p_r**2)
+            y0_ = xp.vstack((r, xp.zeros(case.Ntraj), p_r, p_phi))
         elif case.EventPS == 'pr':
             r = xp.linspace(case.r[0], case.r[1], 2**10)
             phi = xp.linspace(0, 2 * xp.pi, 2**10)
@@ -235,13 +233,16 @@ def run_method(case):
                 y0_ = xp.vstack((r, phi, xp.zeros(case.Ntraj), p_phi))
         y_events = []
         start = time.time()
-        for y0 in y0_.transpose():
-            sol = solve_ivp(case.eqn_H, (0, case.te_au.sum()), y0, events=event_ps, method=case.ode_solver, atol=case.Tol[0], rtol=case.Tol[1])
-            if xp.any(y_events):
-                y_events = xp.vstack((y_events, sol.y_events[0]))
-            else:
-                y_events = sol.y_events[0]
-        print(f'\033[90m        Computation finished in {int(time.time() - start)} seconds \033[00m')
+        comptraj = lambda y0: solve_ivp(case.eqn_H, (0, case.te_au.sum()), y0, events=event_ps, method=case.ode_solver, atol=case.Tol[0], rtol=case.Tol[1])
+        num_cores = None if Parallelization == 'all' else min(multiprocess.cpu_count(), Parallelization)
+        with multiprocess.Pool(num_cores) as pool:
+            for sol in tqdm(pool.imap(comptraj, iterable=y0_.transpose())):
+                if xp.any(y_events):
+                    y_events = xp.vstack((y_events, sol.y_events[0]))
+                else:
+                    y_events = sol.y_events[0]
+        error = (xp.abs(case.energy(0, y_events.T) - case.EnergyPS)).max()
+        print(f'\033[90m        Computation finished in {int(time.time() - start)} seconds with {error:.1e} error in energy \033[00m')
         save_data(case, y_events, filestr)
         if case.PlotResults:
             fig, ax = plt.subplots(1, 1)
