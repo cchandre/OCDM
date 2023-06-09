@@ -67,13 +67,19 @@ ___
 Reference: 
 - C. Chandre, J. Pablo Salas, *Nonlinear dynamics of molecular super-rotors*, [Physical Review A](https://journals.aps.org/pra/), to appear (2023); [arXiv:2303.05090](https://arxiv.org/abs/2303.05090)
 ```bibtex
-@article{chandre2023,
-      title = {Nonlinear dynamics of molecular super-rotors}, 
-      author = {C. Chandre and J. Pablo Salas},
-      journal = {Physical Review A},
-      year = {2023},
-      eprint = {https://doi.org/10.48550/arXiv.2303.05090},
-      archivePrefix = {arXiv:2303.05090},
+@article{PhysRevA.107.063105,
+  title = {Nonlinear dynamics of molecular superrotors},
+  author = {Chandre, C. and Salas, J. Pablo},
+  journal = {Phys. Rev. A},
+  volume = {107},
+  issue = {6},
+  pages = {063105},
+  numpages = {12},
+  year = {2023},
+  month = {Jun},
+  publisher = {American Physical Society},
+  doi = {10.1103/PhysRevA.107.063105},
+  url = {https://link.aps.org/doi/10.1103/PhysRevA.107.063105}
 }
 ```
 For more information: <cristel.chandre@cnrs.fr>
